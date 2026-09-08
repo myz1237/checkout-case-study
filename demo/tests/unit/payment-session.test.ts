@@ -29,6 +29,7 @@ describe("buildPaymentSessionRequest", () => {
       billing: { address: { country: "HK" } },
       enabled_payment_methods: ["card", "applepay"],
       customer: { name: "Jia Tsang", email: "jia@example.com" },
+      payment_method_configuration: { card: { store_payment_details: "collect_consent" } },
       "3ds": { enabled: true },
       items: [
         { reference: "moss-silicone", name: "Moss Silicone Case", quantity: 2, unit_price: 19900, total_amount: 39800 },
@@ -43,6 +44,16 @@ describe("buildPaymentSessionRequest", () => {
     const req = buildPaymentSessionRequest({ ...base, origin: "https://shop.example/" });
     expect(req.success_url).toBe("https://shop.example/success?market=HK");
     expect(req.failure_url).toBe("https://shop.example/failure?market=HK");
+  });
+
+  it("asks Flow to show the stored cards of a known customer", () => {
+    expect(buildPaymentSessionRequest({ ...base, customerId: "cus_1" }).payment_method_configuration).toEqual({
+      card: { store_payment_details: "collect_consent" },
+      stored_card: { customer_id: "cus_1" },
+    });
+    expect(buildPaymentSessionRequest({ ...base, customerId: "cus_1" }).enabled_payment_methods).toEqual(["card", "applepay", "stored_card"]);
+    expect(buildPaymentSessionRequest(base).payment_method_configuration.stored_card).toBeUndefined();
+    expect(buildPaymentSessionRequest(base).enabled_payment_methods).toEqual(["card", "applepay"]);
   });
 
   it("rejects an empty cart", () => {

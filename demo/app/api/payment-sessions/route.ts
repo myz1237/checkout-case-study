@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { priceCart } from "@/lib/cart";
-import { CheckoutApiError, createPaymentSession } from "@/lib/checkout-api";
+import { CheckoutApiError, createPaymentSession, findCustomerByEmail } from "@/lib/checkout-api";
 import { credentialsFor } from "@/lib/credentials";
 import { isCustomerValid, normalizeCustomer, type Customer } from "@/lib/customer";
 import { isCartLines } from "@/lib/guards";
@@ -40,7 +40,10 @@ export async function POST(req: Request) {
     }
     const origin = siteOrigin(req);
     const creds = credentialsFor(market.id);
+    const known = await findCustomerByEmail(creds, customer.email).catch(() => null);
+    if (known) console.log(`payment session for returning customer ${known.id} (${known.instruments?.length ?? 0} stored cards)`);
     const request = buildPaymentSessionRequest({
+      customerId: known?.id,
       market: market.id,
       lines,
       currency,

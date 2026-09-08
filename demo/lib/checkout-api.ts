@@ -79,3 +79,15 @@ export async function getPayment(creds: Credentials, id: string): Promise<Paymen
     throw err;
   }
 }
+
+export type CustomerRecord = { id: string; email: string; instruments?: { id: string; type?: string; last4?: string }[] };
+
+/** Checkout.com creates a customer per email automatically; null when this account has none for the address. */
+export async function findCustomerByEmail(creds: Credentials, email: string): Promise<CustomerRecord | null> {
+  try {
+    return await request<CustomerRecord>(creds, `/customers/${encodeURIComponent(email)}`, { method: "GET" });
+  } catch (err) {
+    if (err instanceof CheckoutApiError && err.status === 404) return null;
+    throw err;
+  }
+}

@@ -11,6 +11,7 @@ export type PaymentSessionInput = {
   country: string;
   paymentMethods: PaymentMethod[];
   customer: Customer;
+  customerId?: string;
   origin: string;
   processingChannelId: string;
 };
@@ -33,8 +34,14 @@ export type PaymentSessionRequest = {
   display_name: string;
   processing_channel_id: string;
   billing: { address: { country: string } };
-  enabled_payment_methods: PaymentMethod[];
+  /** Includes "stored_card" for returning customers; Flow hides stored cards unless it is allow-listed. */
+  enabled_payment_methods: (PaymentMethod | "stored_card")[];
   customer: { name: string; email: string };
+  payment_method_configuration: {
+    card: { store_payment_details: "collect_consent" };
+    /** Present for returning customers: Flow lists the cards stored under this customer. */
+    stored_card?: { customer_id: string };
+  };
   "3ds": { enabled: true };
   items: PaymentSessionItem[];
   success_url: string;
@@ -56,8 +63,12 @@ export function buildPaymentSessionRequest(
     display_name: STORE_DISPLAY_NAME,
     processing_channel_id: input.processingChannelId,
     billing: { address: { country: input.country } },
-    enabled_payment_methods: input.paymentMethods,
+    enabled_payment_methods: input.customerId ? [...input.paymentMethods, "stored_card"] : input.paymentMethods,
     customer: { name: input.customer.name, email: input.customer.email },
+    payment_method_configuration: {
+      card: { store_payment_details: "collect_consent" },
+      ...(input.customerId ? { stored_card: { customer_id: input.customerId } } : {}),
+    },
     "3ds": { enabled: true },
     items: input.lines.map((l) => ({
       reference: l.productId,

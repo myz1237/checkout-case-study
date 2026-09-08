@@ -14,11 +14,17 @@ the merchant ever touching card data.
 | Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language, **credentials** | HK: card + Apple Pay in HKD or USD. NL: card + iDEAL in EUR, card only in USD (iDEAL settles in EUR). Explicit `enabled_payment_methods` so nothing else on the account leaks in. Each market can process through its own account / processing channel. [ADR 0002](docs/adr/0002-market-payment-matrix.md) |
 | No database | Hard-coded catalogue, cart in `localStorage` | Prices are always recomputed on the server from the catalogue; the browser only sends product ids and quantities |
 
+## Saved cards
+
+The card form offers "Save card details for future purchases" (`store_payment_details: collect_consent` on the session). Checkout.com stores the card under a customer keyed by the shopper's email. On the next order with the same email the server looks the customer up (`GET /customers/{email}`), passes `payment_method_configuration.stored_card.customer_id` and allow-lists `stored_card`, and Flow shows the saved card preselected with a one-tap Pay button and no CVV (Flow asks for CVV only where a scheme requires it). Card data never leaves Checkout.com's Vault.
+
+This demo has no login, so anyone who enters an email can pay with the cards saved under it. A real store must put this behind authentication.
+
 ## How a payment flows
 
 1. The shopper picks a market, adds cases, enters name and email, and presses **Checkout**. The cart locks.
 2. The browser posts product ids, quantities, market and customer to `POST /api/payment-sessions`.
-3. The server picks the market's credentials, prices the cart, builds the [Payment Session](https://www.checkout.com/docs/payments/accept-payments/accept-a-payment-on-your-website/get-started-with-flow) request (amount, currency, billing country, enabled payment methods, customer, `3ds.enabled`, line items, `display_name`, success/failure URLs) and calls Checkout.com with the secret key.
+3. The server picks the market's credentials, prices the cart, looks up the customer by email for saved cards, builds the [Payment Session](https://www.checkout.com/docs/payments/accept-payments/accept-a-payment-on-your-website/get-started-with-flow) request (amount, currency, billing country, enabled payment methods, customer, `3ds.enabled`, line items, `display_name`, success/failure URLs) and calls Checkout.com with the secret key.
 4. The page mounts Flow with the session, the public key of the account that created it, the selected locale, the brand palette, and the cardholder name pre-filled from the form.
 5. Outcome:
    - synchronous (no 3DS challenge, Apple Pay): Flow raises `onPaymentCompleted` and we navigate to `/success?cko-payment-id=…`
@@ -53,7 +59,7 @@ Everything lives under `tests/`:
 | Command | What runs |
 |---|---|
 | `pnpm test` | Unit tests in `tests/unit/` (Vitest): cart maths, pricing, session request builder, markets, locales, page copy, input guards, credentials, origin resolution, webhook verification |
-| `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, iDEAL via the test bank, market, currency and language switching, outcome pages |
+| `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, saved card, iDEAL via the test bank, market, currency and language switching, outcome pages |
 | `pnpm lint`, `pnpm build` | ESLint and a production build |
 
 Before the first e2e run: `pnpm exec playwright install chromium`. Run a single scenario with `pnpm test:e2e customer-3ds`; screenshots land in `tests/e2e/screenshots/`.
