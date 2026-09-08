@@ -1,4 +1,5 @@
 import { MAX_QUANTITY, type CartLine } from "./cart";
+import { isCurrency, type Currency } from "./catalog";
 import type { Customer } from "./customer";
 import { isLocaleId, type LocaleId } from "./locales";
 import { isMarketId, type MarketId } from "./markets";
@@ -47,5 +48,6 @@ export function isCheckoutState(value: unknown): value is CheckoutState {
 }
 
 export const isMarket = (value: unknown): value is MarketId => isMarketId(value);
+export const isCurrencyCode = (value: unknown): value is Currency => isCurrency(value);
 export const isLocale = (value: unknown): value is LocaleId => isLocaleId(value);
 export const isString = (value: unknown): value is string => typeof value === "string";

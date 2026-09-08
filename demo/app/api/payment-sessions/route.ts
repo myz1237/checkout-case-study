@@ -4,11 +4,12 @@ import { CheckoutApiError, createPaymentSession } from "@/lib/checkout-api";
 import { credentialsFor } from "@/lib/credentials";
 import { isCustomerValid, normalizeCustomer, type Customer } from "@/lib/customer";
 import { isCartLines } from "@/lib/guards";
-import { getMarket } from "@/lib/markets";
+import { getMarket, paymentMethodsFor, resolveCurrency } from "@/lib/markets";
+import { isCurrency } from "@/lib/catalog";
 import { buildPaymentSessionRequest } from "@/lib/payment-session";
 import { siteOrigin } from "@/lib/site-origin";
 
-type Body = { lines?: unknown; market?: unknown; customer?: unknown };
+type Body = { lines?: unknown; market?: unknown; currency?: unknown; customer?: unknown };
 
 function parseCustomer(body: Body): Customer | null {
   if (typeof body.customer !== "object" || body.customer === null) return null;
@@ -22,10 +23,14 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => ({}))) as Body;
     const market = getMarket(body.market);
+    if (body.currency !== undefined && (!isCurrency(body.currency) || !market.currencies.includes(body.currency))) {
+      return NextResponse.json({ error: "currency_invalid" }, { status: 400 });
+    }
+    const currency = resolveCurrency(market, body.currency);
     if (!isCartLines(body.lines)) {
       return NextResponse.json({ error: "lines_invalid" }, { status: 400 });
     }
-    const lines = priceCart(body.lines, market.currency);
+    const lines = priceCart(body.lines, currency);
     if (lines.length === 0) {
       return NextResponse.json({ error: "cart_empty" }, { status: 400 });
     }
@@ -38,9 +43,9 @@ export async function POST(req: Request) {
     const request = buildPaymentSessionRequest({
       market: market.id,
       lines,
-      currency: market.currency,
+      currency,
       country: market.country,
-      paymentMethods: market.paymentMethods,
+      paymentMethods: paymentMethodsFor(market, currency),
       customer,
       reference: `ORD-${Date.now()}`,
       origin,

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import CartSummary from "@/components/CartSummary";
+import CurrencySelect from "@/components/CurrencySelect";
 import CustomerForm from "@/components/CustomerForm";
 import FlowCheckout from "@/components/FlowCheckout";
 import LanguageSelect from "@/components/LanguageSelect";
@@ -11,10 +12,11 @@ import ProductGrid from "@/components/ProductGrid";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { addToCart, priceCart, setQuantity, type CartLine } from "@/lib/cart";
 import { EMPTY_CUSTOMER, isCustomerValid, normalizeCustomer, type Customer } from "@/lib/customer";
-import { isCartLines, isCheckoutState, isCustomer, isLocale, isMarket, type CheckoutState } from "@/lib/guards";
+import type { Currency } from "@/lib/catalog";
+import { isCartLines, isCheckoutState, isCurrencyCode, isCustomer, isLocale, isMarket, type CheckoutState } from "@/lib/guards";
 import { LOCALE_COOKIE, translator, type MessageKey } from "@/lib/i18n";
 import { intlLocale, resolveLocale, type LocaleId } from "@/lib/locales";
-import { DEFAULT_MARKET, MARKETS, type MarketId } from "@/lib/markets";
+import { DEFAULT_MARKET, MARKETS, resolveCurrency, type MarketId } from "@/lib/markets";
 
 const NO_CHECKOUT: CheckoutState = { locked: false, session: null, publicKey: null };
 const EMPTY_LINES: CartLine[] = [];
@@ -22,6 +24,7 @@ const EMPTY_LINES: CartLine[] = [];
 export default function Home() {
   const [marketId, setMarketId] = usePersistentState<MarketId>("tricase.market", DEFAULT_MARKET, "local", isMarket);
   const [storedLocale, setStoredLocale] = usePersistentState<string>("tricase.locale", "", "local", isLocale);
+  const [storedCurrency, setStoredCurrency] = usePersistentState<string>("tricase.currency", "", "local", isCurrencyCode);
   const [lines, setLines, cartReady] = usePersistentState<CartLine[]>("tricase.cart", EMPTY_LINES, "local", isCartLines);
   const [customer, setCustomer] = usePersistentState<Customer>("tricase.customer", EMPTY_CUSTOMER, "local", isCustomer);
   const [touched, setTouched] = useState(false);
@@ -32,7 +35,7 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
 
   const market = MARKETS[marketId] ?? MARKETS[DEFAULT_MARKET];
-  const currency = market.currency;
+  const currency: Currency = resolveCurrency(market, storedCurrency);
   const localeId: LocaleId = resolveLocale(market, storedLocale);
   const locale = intlLocale(localeId);
   const t = translator(localeId);
@@ -55,7 +58,7 @@ export default function Home() {
       const res = await fetch("/api/payment-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lines, market: market.id, customer: normalizeCustomer(customer) }),
+        body: JSON.stringify({ lines, market: market.id, currency, customer: normalizeCustomer(customer) }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const { session, publicKey } = await res.json();
@@ -80,6 +83,12 @@ export default function Home() {
     editCart();
     setMarketId(id);
     setStoredLocale(MARKETS[id].defaultLocale);
+    setStoredCurrency(MARKETS[id].currencies[0]);
+  }
+
+  function changeCurrency(c: Currency) {
+    editCart();
+    setStoredCurrency(c);
   }
 
   return (
@@ -89,6 +98,7 @@ export default function Home() {
         <p className="muted">{t("tagline")}</p>
         <div className="controls">
           <MarketSwitch value={market.id} disabled={busy} t={t} onChange={changeMarket} />
+          <CurrencySelect value={currency} options={market.currencies} label={t("currency")} disabled={busy} onChange={changeCurrency} />
           <LanguageSelect value={localeId} options={market.locales} label={t("language")} onChange={setStoredLocale} />
         </div>
       </header>

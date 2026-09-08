@@ -11,14 +11,15 @@ methods than we want to offer (Google Pay, Sofort), and Flow shows everything th
 
 A `Market` record drives everything per market:
 
-| Market | Currency | Billing country | Payment methods | Languages |
+| Market | Currencies | Billing country | Payment methods | Languages |
 |---|---|---|---|---|
-| Hong Kong | HKD | HK | card, applepay | en (default), zh-HK |
-| Netherlands | EUR | NL | card, ideal | nl (default), en |
+| Hong Kong | HKD (default), USD | HK | card, applepay | en (default), zh-HK |
+| Netherlands | EUR (default), USD | NL | card, ideal (EUR only) | nl (default), en |
 
-Every payment session sends an explicit `enabled_payment_methods` list. Prices are a separate
-hard-coded list per currency, not an FX conversion. Switching market while a session is open
-discards that session, because a session is priced in one currency.
+Every payment session sends an explicit `enabled_payment_methods` list, filtered by the chosen
+currency (iDEAL settles only in EUR). Prices are a separate hard-coded list per currency, not an
+FX conversion. Switching market or currency while a session is open discards that session,
+because a session is priced in one currency.
 
 Credentials are resolved per market as well (`lib/credentials.ts`): a market can be processed
 through its own account / processing channel via `CKO_<MARKET>_*` variables, otherwise it uses

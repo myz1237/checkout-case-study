@@ -11,7 +11,7 @@ the merchant ever touching card data.
 | Capture card details securely, stay PCI compliant | **Checkout.com Flow** embedded on the page | Card fields are rendered in Checkout.com iframes, the merchant qualifies for SAQ A, and the checkout stays on our page (no redirect to a hosted page). [ADR 0001](docs/adr/0001-flow-over-hosted-pages.md) |
 | Mostly iPhone visitors, faster checkout | **Apple Pay via Flow** | Flow renders the Apple Pay button on Safari once the domain is enrolled; no separate wallet integration. [docs/apple-pay.md](docs/apple-pay.md) |
 | Works on mobile | One responsive web page | Flow is a responsive web component; the native Mobile SDKs are for apps, not websites |
-| Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language, **credentials** | HK: card + Apple Pay in HKD. NL: card + iDEAL in EUR. Explicit `enabled_payment_methods` so nothing else on the account leaks in. Each market can process through its own account / processing channel. [ADR 0002](docs/adr/0002-market-payment-matrix.md) |
+| Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language, **credentials** | HK: card + Apple Pay in HKD or USD. NL: card + iDEAL in EUR, card only in USD (iDEAL settles in EUR). Explicit `enabled_payment_methods` so nothing else on the account leaks in. Each market can process through its own account / processing channel. [ADR 0002](docs/adr/0002-market-payment-matrix.md) |
 | No database | Hard-coded catalogue, cart in `localStorage` | Prices are always recomputed on the server from the catalogue; the browser only sends product ids and quantities |
 
 ## How a payment flows
@@ -52,7 +52,7 @@ Everything lives under `tests/`:
 | Command | What runs |
 |---|---|
 | `pnpm test` | Unit tests in `tests/unit/` (Vitest): cart maths, pricing, session request builder, markets, locales, page copy, input guards, credentials, origin resolution |
-| `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, iDEAL via the test bank, market and language switching, outcome pages |
+| `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, iDEAL via the test bank, market, currency and language switching, outcome pages |
 | `pnpm lint`, `pnpm build` | ESLint and a production build |
 
 Before the first e2e run: `pnpm exec playwright install chromium`. Run a single scenario with `pnpm test:e2e customer-3ds`; screenshots land in `tests/e2e/screenshots/`.
@@ -70,7 +70,7 @@ Any future expiry and any 3-digit CVV. Full list: [Checkout.com test cards](http
 | iDEAL (NL market) | bank **TESTNL2A**, then **SUCCESS** (or FAILURE) on the simulator | Redirect to the iDEAL test page, then back to the success (or failure) page |
 | Apple Pay | Safari on an Apple Pay device, enrolled domain | Apple Pay button above the card form |
 
-Switch market with the segmented control (prices, currency and payment methods change) and language with the dropdown next to it: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
+Switch market with the segmented control (prices, currency and payment methods change), currency with the first dropdown (each market has its own price list per currency; iDEAL disappears outside EUR) and language with the second: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
 
 ## Deploy to Vercel
 

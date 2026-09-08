@@ -2,7 +2,7 @@ import type { Market } from "./markets";
 
 /** Flow locale codes we offer, with their display names and Intl equivalents. */
 export const LOCALES = {
-  en: { label: "English", intl: "en" },
+  en: { label: "English", intl: "en-HK" },
   "zh-HK": { label: "繁體中文（香港）", intl: "zh-HK" },
   nl: { label: "Nederlands", intl: "nl-NL" },
 } as const;

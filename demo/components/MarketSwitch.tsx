@@ -17,7 +17,7 @@ export default function MarketSwitch({ value, disabled, t, onChange }: Props) {
           disabled={disabled}
           onClick={() => onChange(m.id)}
         >
-          {t(`market_${m.id}`)} · {m.currency}
+          {t(`market_${m.id}`)}
         </button>
       ))}
     </div>
