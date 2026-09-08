@@ -72,7 +72,9 @@ html, body {
 .product h3 { margin: 8px 0 0; font-size: 1rem; }
 .product .muted { margin: 0; font-size: 0.9rem; flex: 1; }
 .case-art { width: 100%; height: 160px; }
-.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.row .btn { margin-left: auto; white-space: nowrap; }
+.product { min-width: 0; }
 
 .btn-small { padding: 8px 14px; font-size: 0.9rem; }
 .btn-ghost {
