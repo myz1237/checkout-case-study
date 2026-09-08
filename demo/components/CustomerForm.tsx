@@ -1,20 +1,22 @@
 "use client";
 
 import { type Customer, validateCustomer } from "@/lib/customer";
+import type { Translate } from "@/lib/i18n";
 
 type Props = {
   value: Customer;
   disabled: boolean;
   showErrors: boolean;
+  t: Translate;
   onChange: (next: Customer) => void;
 };
 
-export default function CustomerForm({ value, disabled, showErrors, onChange }: Props) {
+export default function CustomerForm({ value, disabled, showErrors, t, onChange }: Props) {
   const errors = showErrors ? validateCustomer(value) : {};
   return (
     <div className="customer">
       <label>
-        Full name
+        {t("full_name")}
         <input
           name="name"
           autoComplete="name"
@@ -23,10 +25,10 @@ export default function CustomerForm({ value, disabled, showErrors, onChange }: 
           aria-invalid={Boolean(errors.name)}
           onChange={(e) => onChange({ ...value, name: e.target.value })}
         />
-        {errors.name && <span className="field-error">{errors.name}</span>}
+        {errors.name && <span className="field-error">{t(errors.name)}</span>}
       </label>
       <label>
-        Email
+        {t("email")}
         <input
           name="email"
           type="email"
@@ -36,7 +38,7 @@ export default function CustomerForm({ value, disabled, showErrors, onChange }: 
           aria-invalid={Boolean(errors.email)}
           onChange={(e) => onChange({ ...value, email: e.target.value })}
         />
-        {errors.email && <span className="field-error">{errors.email}</span>}
+        {errors.email && <span className="field-error">{t(errors.email)}</span>}
       </label>
     </div>
   );

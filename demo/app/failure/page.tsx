@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import CheckoutStorage from "@/components/CheckoutStorage";
 import { BackLink, OutcomeNotice } from "@/components/PaymentOutcome";
+import { intlLocale } from "@/lib/locales";
 import { loadOutcome } from "@/lib/outcome";
+import { serverLocale } from "@/lib/server-locale";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -11,7 +13,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
  * The cart is kept so the customer can retry.
  */
 export default async function FailurePage({ searchParams }: Props) {
-  const params = await searchParams;
+  const [params, { locale, t }] = await Promise.all([searchParams, serverLocale()]);
   const outcome = await loadOutcome(params["cko-payment-id"]);
   if (outcome.kind === "success" || outcome.kind === "pending") {
     redirect(`/success?cko-payment-id=${outcome.paymentId}`);
@@ -23,13 +25,11 @@ export default async function FailurePage({ searchParams }: Props) {
         <h1>Tri Case</h1>
       </header>
       <section className="panel">
-        <h2 className="error">{outcome.kind === "unavailable" ? "We could not check this payment" : "Payment failed"}</h2>
-        {outcome.kind === "failed" && (
-          <p className="muted">Nothing was charged. Your cart has been kept so you can try again.</p>
-        )}
-        <OutcomeNotice outcome={outcome} />
+        <h2 className="error">{outcome.kind === "unavailable" ? t("failed_check_title") : t("failed_title")}</h2>
+        {outcome.kind === "failed" && <p className="muted">{t("failed_note")}</p>}
+        <OutcomeNotice outcome={outcome} locale={intlLocale(locale)} t={t} />
         <CheckoutStorage action="unlock" />
-        <BackLink label="Back to cart" />
+        <BackLink label={t("back_to_cart")} />
       </section>
     </main>
   );

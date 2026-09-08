@@ -8,6 +8,7 @@ import {
   type PayPaymentSessionSuccessfulResponse,
 } from "@checkout.com/checkout-web-components";
 import { flowAppearance } from "@/lib/flow-appearance";
+import type { Translate } from "@/lib/i18n";
 
 type Props = {
   paymentSession: Record<string, unknown>;
@@ -15,6 +16,7 @@ type Props = {
   cardholderName?: string;
   /** Flow display language; changing it re-initialises Flow on the same session. */
   locale: string;
+  t: Translate;
   onPaymentCompleted: (payment: PayPaymentSessionSuccessfulResponse) => void;
   onError?: (error: CheckoutError) => void;
 };
@@ -32,6 +34,7 @@ export default function FlowCheckout({
   paymentSession,
   cardholderName,
   locale,
+  t,
   onPaymentCompleted,
   onError,
 }: Props) {
@@ -98,10 +101,8 @@ export default function FlowCheckout({
 
   return (
     <div className="flow-wrapper">
-      {status === "loading" && <p className="muted">Loading payment options…</p>}
-      {status === "failed" && (
-        <p className="error">Payment options could not be loaded. Please refresh.</p>
-      )}
+      {status === "loading" && <p className="muted">{t("loading_payment")}</p>}
+      {status === "failed" && <p className="error">{t("flow_failed")}</p>}
       <div ref={containerRef} id="flow-container" />
     </div>
   );

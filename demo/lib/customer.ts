@@ -4,10 +4,13 @@ export const EMPTY_CUSTOMER: Customer = { name: "", email: "" };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function validateCustomer(c: Customer): { name?: string; email?: string } {
-  const errors: { name?: string; email?: string } = {};
-  if (c.name.trim().length < 2) errors.name = "Enter your full name";
-  if (!EMAIL.test(c.email.trim())) errors.email = "Enter a valid email address";
+export type CustomerErrors = { name?: "error_name"; email?: "error_email" };
+
+/** Returns message keys (see lib/i18n.ts) for each invalid field. */
+export function validateCustomer(c: Customer): CustomerErrors {
+  const errors: CustomerErrors = {};
+  if (c.name.trim().length < 2) errors.name = "error_name";
+  if (!EMAIL.test(c.email.trim())) errors.email = "error_email";
   return errors;
 }
 

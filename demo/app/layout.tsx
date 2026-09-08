@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { intlLocale } from "@/lib/locales";
+import { serverLocale } from "@/lib/server-locale";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -6,9 +8,10 @@ export const metadata: Metadata = {
   description: "iPhone cases for Hong Kong and the Netherlands",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale } = await serverLocale();
   return (
-    <html lang="en">
+    <html lang={intlLocale(locale)}>
       <body>{children}</body>
     </html>
   );

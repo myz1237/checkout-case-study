@@ -2,28 +2,29 @@ import Link from "next/link";
 import type { PaymentDetails } from "@/lib/checkout-api";
 import { formatMoney } from "@/lib/cart";
 import type { Currency } from "@/lib/catalog";
+import type { Translate } from "@/lib/i18n";
 import type { Outcome } from "@/lib/outcome";
 import { paymentMethodLabel } from "@/lib/payment-view";
 
-export function PaymentDetailsList({ payment }: { payment: PaymentDetails }) {
+export function PaymentDetailsList({ payment, locale, t }: { payment: PaymentDetails; locale: string; t: Translate }) {
   const ok = payment.approved;
   return (
     <dl className="details" data-testid="payment-details">
-      <dt>Status</dt>
+      <dt>{t("status")}</dt>
       <dd className={ok ? "success" : "error"}>{payment.status}</dd>
-      <dt>Amount</dt>
-      <dd>{formatMoney(payment.amount, payment.currency as Currency)}</dd>
-      <dt>Payment method</dt>
+      <dt>{t("amount")}</dt>
+      <dd>{formatMoney(payment.amount, payment.currency as Currency, locale)}</dd>
+      <dt>{t("method")}</dt>
       <dd>{paymentMethodLabel(payment)}</dd>
-      <dt>Order reference</dt>
+      <dt>{t("reference")}</dt>
       <dd>{payment.reference ?? "—"}</dd>
-      <dt>Payment id</dt>
+      <dt>{t("payment_id")}</dt>
       <dd>
         <code>{payment.id}</code>
       </dd>
       {!ok && payment.response_summary && (
         <>
-          <dt>Reason</dt>
+          <dt>{t("reason")}</dt>
           <dd>{payment.response_summary}</dd>
         </>
       )}
@@ -32,25 +33,16 @@ export function PaymentDetailsList({ payment }: { payment: PaymentDetails }) {
 }
 
 /** Body shared by the outcome pages for the states that have no payment to show. */
-export function OutcomeNotice({ outcome }: { outcome: Outcome }) {
+export function OutcomeNotice({ outcome, locale, t }: { outcome: Outcome; locale: string; t: Translate }) {
   switch (outcome.kind) {
     case "missing":
-      return <p className="muted">No payment reference was provided.</p>;
+      return <p className="muted">{t("missing_id")}</p>;
     case "not_found":
-      return (
-        <p className="muted">
-          We could not find payment <code>{outcome.paymentId}</code>.
-        </p>
-      );
+      return <p className="muted">{t("not_found", { id: outcome.paymentId })}</p>;
     case "unavailable":
-      return (
-        <p className="muted">
-          We could not retrieve payment <code>{outcome.paymentId}</code> right now. If you were charged, you will
-          receive a confirmation email; please do not pay again.
-        </p>
-      );
+      return <p className="muted">{t("unavailable", { id: outcome.paymentId })}</p>;
     default:
-      return <PaymentDetailsList payment={outcome.payment} />;
+      return <PaymentDetailsList payment={outcome.payment} locale={locale} t={t} />;
   }
 }
 

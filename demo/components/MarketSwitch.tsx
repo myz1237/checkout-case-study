@@ -1,12 +1,13 @@
 "use client";
 
+import type { Translate } from "@/lib/i18n";
 import { MARKETS, type MarketId } from "@/lib/markets";
 
-type Props = { value: MarketId; disabled?: boolean; onChange: (id: MarketId) => void };
+type Props = { value: MarketId; disabled?: boolean; t: Translate; onChange: (id: MarketId) => void };
 
-export default function MarketSwitch({ value, disabled, onChange }: Props) {
+export default function MarketSwitch({ value, disabled, t, onChange }: Props) {
   return (
-    <div className="segmented" role="group" aria-label="Market">
+    <div className="segmented" role="group" aria-label={t("market")}>
       {Object.values(MARKETS).map((m) => (
         <button
           key={m.id}
@@ -16,7 +17,7 @@ export default function MarketSwitch({ value, disabled, onChange }: Props) {
           disabled={disabled}
           onClick={() => onChange(m.id)}
         >
-          {m.label} · {m.currency}
+          {t(`market_${m.id}`)} · {m.currency}
         </button>
       ))}
     </div>

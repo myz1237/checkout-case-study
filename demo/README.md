@@ -59,7 +59,7 @@ Any future expiry and any 3-digit CVV. Full list: [Checkout.com test cards](http
 | iDEAL (NL market) | bank **TESTNL2A**, then **SUCCESS** (or FAILURE) on the simulator | Redirect to the iDEAL test page, then back to the success (or failure) page |
 | Apple Pay | Safari on an Apple Pay device, enrolled domain | Apple Pay button above the card form |
 
-Switch market with the segmented control (prices, currency and payment methods change) and language with the dropdown next to it (Flow re-renders in `en`, `zh-HK` or `nl`).
+Switch market with the segmented control (prices, currency and payment methods change) and language with the dropdown next to it: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
 
 ## Deploy to Vercel
 
@@ -84,7 +84,7 @@ Switch market with the segmented control (prices, currency and payment methods c
 ```
 app/                Next.js App Router: storefront page, /success, /failure, /api/payment-sessions
 components/         ProductGrid, CartSummary, CustomerForm, MarketSwitch, LanguageSelect, FlowCheckout, PaymentOutcome
-lib/                catalogue, cart maths, markets, locales, session request builder, Checkout.com API client (+ unit tests)
+lib/                catalogue, cart maths, markets, locales, page copy (i18n), session request builder, Checkout.com API client (+ unit tests)
 hooks/              usePersistentState (localStorage / sessionStorage via useSyncExternalStore)
 scripts/            enroll-apple-pay.mjs
 docs/               apple-pay.md, adr/
