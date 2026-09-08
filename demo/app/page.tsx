@@ -3,11 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import CartSummary from "@/components/CartSummary";
+import CustomerForm from "@/components/CustomerForm";
 import FlowCheckout from "@/components/FlowCheckout";
 import MarketSwitch from "@/components/MarketSwitch";
 import ProductGrid from "@/components/ProductGrid";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { addToCart, priceCart, setQuantity, type CartLine } from "@/lib/cart";
+import { EMPTY_CUSTOMER, isCustomerValid, normalizeCustomer, type Customer } from "@/lib/customer";
 import { DEFAULT_MARKET, MARKETS, type MarketId } from "@/lib/markets";
 
 type Session = Record<string, unknown> & { id: string };
@@ -16,6 +18,8 @@ type Checkout = { locked: boolean; session: Session | null };
 export default function Home() {
   const [marketId, setMarketId] = usePersistentState<MarketId>("tricase.market", DEFAULT_MARKET);
   const [lines, setLines, cartReady] = usePersistentState<CartLine[]>("tricase.cart", []);
+  const [customer, setCustomer] = usePersistentState<Customer>("tricase.customer", EMPTY_CUSTOMER);
+  const [touched, setTouched] = useState(false);
   const [checkout, setCheckout] = usePersistentState<Checkout>(
     "tricase.checkout",
     { locked: false, session: null },
@@ -30,15 +34,18 @@ export default function Home() {
   const locale = market.defaultLocale;
   const priced = priceCart(lines, currency);
   const locked = checkout.locked && checkout.session !== null;
+  const customerValid = isCustomerValid(customer);
 
   async function startCheckout() {
+    setTouched(true);
+    if (!customerValid) return;
     setBusy(true);
     setError(null);
     try {
       const res = await fetch("/api/payment-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lines, market: market.id }),
+        body: JSON.stringify({ lines, market: market.id, customer: normalizeCustomer(customer) }),
       });
       if (!res.ok) throw new Error(`Could not create payment session (${res.status})`);
       setCheckout({ locked: true, session: await res.json() });
@@ -87,8 +94,12 @@ export default function Home() {
           />
         )}
 
+        {priced.length > 0 && (
+          <CustomerForm value={customer} disabled={locked} showErrors={touched} onChange={setCustomer} />
+        )}
+
         {!locked && priced.length > 0 && (
-          <button className="btn" onClick={startCheckout} disabled={busy}>
+          <button className="btn" onClick={startCheckout} disabled={busy || (touched && !customerValid)}>
             {busy ? "Preparing…" : "Checkout"}
           </button>
         )}
@@ -101,6 +112,7 @@ export default function Home() {
             </button>
             <FlowCheckout
               paymentSession={checkout.session!}
+              cardholderName={normalizeCustomer(customer).name}
               onPaymentCompleted={(p) => router.push(`/success?cko-payment-id=${encodeURIComponent(p.id)}`)}
               onError={() => setError("Something went wrong with the payment. Please try again.")}
             />

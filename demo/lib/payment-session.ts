@@ -4,6 +4,7 @@
  */
 import type { Currency } from "./catalog";
 import { cartTotal, type PricedLine } from "./cart";
+import type { Customer } from "./customer";
 import type { PaymentMethod } from "./markets";
 
 export type PaymentSessionInput = {
@@ -14,6 +15,7 @@ export type PaymentSessionInput = {
   country: string;
   /** Explicit allow-list so account-level extras (e.g. Google Pay) never leak into Flow. */
   paymentMethods: PaymentMethod[];
+  customer: Customer;
   /** Origin of the storefront, used to build the success / failure URLs. */
   origin: string;
   processingChannelId: string;
@@ -34,6 +36,9 @@ export type PaymentSessionRequest = {
   processing_channel_id: string;
   billing: { address: { country: string } };
   enabled_payment_methods: PaymentMethod[];
+  customer: { name: string; email: string };
+  /** Always request 3DS: SCA is mandatory in the EEA and it is cheap insurance elsewhere. */
+  "3ds": { enabled: true };
   items: PaymentSessionItem[];
   success_url: string;
   failure_url: string;
@@ -54,6 +59,8 @@ export function buildPaymentSessionRequest(
     processing_channel_id: input.processingChannelId,
     billing: { address: { country: input.country } },
     enabled_payment_methods: input.paymentMethods,
+    customer: { name: input.customer.name, email: input.customer.email },
+    "3ds": { enabled: true },
     items: input.lines.map((l) => ({
       reference: l.productId,
       name: l.name,

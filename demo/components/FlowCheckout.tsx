@@ -10,6 +10,8 @@ import {
 
 type Props = {
   paymentSession: Record<string, unknown>;
+  /** Pre-fills Flow's cardholder name field (shown at the top of the card form). */
+  cardholderName?: string;
   onPaymentCompleted: (payment: PayPaymentSessionSuccessfulResponse) => void;
   onError?: (error: CheckoutError) => void;
 };
@@ -21,6 +23,7 @@ type Props = {
  */
 export default function FlowCheckout({
   paymentSession,
+  cardholderName,
   onPaymentCompleted,
   onError,
 }: Props) {
@@ -48,6 +51,12 @@ export default function FlowCheckout({
               ? "production"
               : "sandbox",
           paymentSession,
+          componentOptions: {
+            card: {
+              displayCardholderName: "top",
+              data: cardholderName ? { cardholderName } : undefined,
+            },
+          },
           onReady: () => setStatus("ready"),
           onPaymentCompleted: (_c, payment) => completedRef.current(payment),
           onError: (_c, error) => {
@@ -70,7 +79,7 @@ export default function FlowCheckout({
       cancelled = true;
       component?.unmount();
     };
-  }, [paymentSession]);
+  }, [paymentSession, cardholderName]);
 
   return (
     <div className="flow-wrapper">
