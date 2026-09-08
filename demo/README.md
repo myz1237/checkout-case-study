@@ -56,7 +56,7 @@ Any future expiry and any 3-digit CVV. Full list: [Checkout.com test cards](http
 | Approved, 3DS challenge | `4010061700000021` | Challenge modal (password `Checkout1!`), then the success page |
 | 3DS failed | `4243754271700719` | Failure page with "Cardholder failed 3D-Secure authentication", cart kept |
 | Declined (insufficient funds) | `4544249167673670` | Flow shows the decline inline; try another card |
-| iDEAL (NL market) | pick the test bank on the simulator | Redirect to the bank simulator, then the success page |
+| iDEAL (NL market) | bank **TESTNL2A**, then **SUCCESS** (or FAILURE) on the simulator | Redirect to the iDEAL test page, then back to the success (or failure) page |
 | Apple Pay | Safari on an Apple Pay device, enrolled domain | Apple Pay button above the card form |
 
 Switch market with the segmented control (prices, currency and payment methods change) and language with the dropdown next to it (Flow re-renders in `en`, `zh-HK` or `nl`).
@@ -75,7 +75,7 @@ Switch market with the segmented control (prices, currency and payment methods c
 ## Known limitations
 
 - **Apple Pay enrollment** needs a secret key with the `vault:apme-enrollment` scope. The shared case-study key returns `401` from the enrollment endpoint; use a sandbox account you own. Sandbox testing needs an App Store Connect sandbox tester and Apple's sandbox covers Hong Kong but not the Netherlands. See [docs/apple-pay.md](docs/apple-pay.md) and [ADR 0003](docs/adr/0003-apple-pay-enrollment.md).
-- **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code already sends `ideal` for the NL market; Checkout.com silently drops it until the account has it.
+- **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code already sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. The shared case-study sandbox has iDEAL but cannot enrol Apple Pay, and vice versa for a fresh sandbox account, so the two wallets are demonstrated with different keys.
 - Flow's Hong Kong locale must be passed as `zh-HK`; the lowercase `zh-hk` shown in the localization docs is ignored.
 - Not built (Part 3 optional items left out on purpose): webhooks and refunds. Both need a public URL and would sit naturally on the Vercel deployment.
 
