@@ -11,6 +11,7 @@ const base = {
   currency: "HKD" as const,
   reference: "ORD-1",
   country: "HK",
+  paymentMethods: ["card" as const, "applepay" as const],
   origin: "http://localhost:3000",
   processingChannelId: "pc_test",
 };
@@ -23,6 +24,7 @@ describe("buildPaymentSessionRequest", () => {
       reference: "ORD-1",
       processing_channel_id: "pc_test",
       billing: { address: { country: "HK" } },
+      enabled_payment_methods: ["card", "applepay"],
       items: [
         { reference: "moss-silicone", name: "Moss Silicone Case", quantity: 2, unit_price: 19900, total_amount: 39800 },
         { reference: "tri-grip", name: "Tri Grip Case", quantity: 1, unit_price: 24900, total_amount: 24900 },

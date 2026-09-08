@@ -3,17 +3,17 @@
 import { useCallback, useState } from "react";
 import CartSummary from "@/components/CartSummary";
 import FlowCheckout from "@/components/FlowCheckout";
+import MarketSwitch from "@/components/MarketSwitch";
 import ProductGrid from "@/components/ProductGrid";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { addToCart, priceCart, setQuantity, type CartLine } from "@/lib/cart";
+import { DEFAULT_MARKET, MARKETS, type MarketId } from "@/lib/markets";
 
 type Session = Record<string, unknown> & { id: string };
 type Checkout = { locked: boolean; session: Session | null };
 
-const CURRENCY = "HKD";
-const LOCALE = "en";
-
 export default function Home() {
+  const [marketId, setMarketId] = usePersistentState<MarketId>("tricase.market", DEFAULT_MARKET);
   const [lines, setLines, cartReady] = usePersistentState<CartLine[]>("tricase.cart", []);
   const [checkout, setCheckout] = usePersistentState<Checkout>(
     "tricase.checkout",
@@ -24,7 +24,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const priced = priceCart(lines, CURRENCY);
+  const market = MARKETS[marketId] ?? MARKETS[DEFAULT_MARKET];
+  const currency = market.currency;
+  const locale = market.defaultLocale;
+  const priced = priceCart(lines, currency);
   const locked = checkout.locked && checkout.session !== null;
 
   async function startCheckout() {
@@ -34,7 +37,7 @@ export default function Home() {
       const res = await fetch("/api/payment-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lines }),
+        body: JSON.stringify({ lines, market: market.id }),
       });
       if (!res.ok) throw new Error(`Could not create payment session (${res.status})`);
       setCheckout({ locked: true, session: await res.json() });
@@ -50,16 +53,24 @@ export default function Home() {
     setError(null);
   }, [setCheckout]);
 
+  function changeMarket(id: MarketId) {
+    // A session is priced in one currency; switching market invalidates it.
+    editCart();
+    setPaymentId(null);
+    setMarketId(id);
+  }
+
   return (
     <main className="page">
       <header className="masthead">
         <h1>Tri Case</h1>
         <p className="muted">iPhone cases · Hong Kong & the Netherlands</p>
+        <MarketSwitch value={market.id} onChange={changeMarket} />
       </header>
 
       <ProductGrid
-        currency={CURRENCY}
-        locale={LOCALE}
+        currency={currency}
+        locale={locale}
         disabled={locked}
         onAdd={(id) => setLines((prev) => addToCart(prev, id))}
       />
@@ -69,8 +80,8 @@ export default function Home() {
         {cartReady && (
           <CartSummary
             lines={priced}
-            currency={CURRENCY}
-            locale={LOCALE}
+            currency={currency}
+            locale={locale}
             locked={locked}
             onQuantity={(id, q) => setLines((prev) => setQuantity(prev, id, q))}
           />

@@ -5,9 +5,10 @@ import {
   createPaymentSession,
   processingChannelId,
 } from "@/lib/checkout-api";
+import { getMarket } from "@/lib/markets";
 import { buildPaymentSessionRequest } from "@/lib/payment-session";
 
-type Body = { lines?: unknown };
+type Body = { lines?: unknown; market?: unknown };
 
 function parseLines(body: Body): CartLine[] {
   if (!Array.isArray(body.lines)) return [];
@@ -22,16 +23,18 @@ function parseLines(body: Body): CartLine[] {
 export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => ({}))) as Body;
+    const market = getMarket(body.market);
     // Amounts are always recomputed from the catalogue; the browser only sends ids and quantities.
-    const lines = priceCart(parseLines(body), "HKD");
+    const lines = priceCart(parseLines(body), market.currency);
     if (lines.length === 0) {
       return NextResponse.json({ error: "cart_empty" }, { status: 400 });
     }
     const origin = new URL(req.url).origin;
     const request = buildPaymentSessionRequest({
       lines,
-      currency: "HKD",
-      country: "HK",
+      currency: market.currency,
+      country: market.country,
+      paymentMethods: market.paymentMethods,
       reference: `ORD-${Date.now()}`,
       origin,
       processingChannelId: processingChannelId(),

@@ -92,3 +92,13 @@ html, body {
   width: 28px; height: 28px; margin: 0 6px;
   border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer;
 }
+
+.masthead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; }
+.masthead .muted { flex: 1 1 auto; }
+.segmented { display: inline-flex; border: 1px solid var(--ink); border-radius: 8px; overflow: hidden; }
+.segmented button {
+  appearance: none; border: 0; background: #fff; color: var(--ink);
+  padding: 8px 14px; font-size: 0.9rem; cursor: pointer;
+}
+.segmented button + button { border-left: 1px solid var(--ink); }
+.segmented button.active { background: var(--ink); color: var(--paper); }

@@ -4,6 +4,7 @@
  */
 import type { Currency } from "./catalog";
 import { cartTotal, type PricedLine } from "./cart";
+import type { PaymentMethod } from "./markets";
 
 export type PaymentSessionInput = {
   lines: PricedLine[];
@@ -11,6 +12,8 @@ export type PaymentSessionInput = {
   reference: string;
   /** ISO 3166-1 alpha-2 billing country. */
   country: string;
+  /** Explicit allow-list so account-level extras (e.g. Google Pay) never leak into Flow. */
+  paymentMethods: PaymentMethod[];
   /** Origin of the storefront, used to build the success / failure URLs. */
   origin: string;
   processingChannelId: string;
@@ -30,6 +33,7 @@ export type PaymentSessionRequest = {
   reference: string;
   processing_channel_id: string;
   billing: { address: { country: string } };
+  enabled_payment_methods: PaymentMethod[];
   items: PaymentSessionItem[];
   success_url: string;
   failure_url: string;
@@ -49,6 +53,7 @@ export function buildPaymentSessionRequest(
     reference: input.reference,
     processing_channel_id: input.processingChannelId,
     billing: { address: { country: input.country } },
+    enabled_payment_methods: input.paymentMethods,
     items: input.lines.map((l) => ({
       reference: l.productId,
       name: l.name,
