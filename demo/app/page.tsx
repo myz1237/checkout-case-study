@@ -33,6 +33,7 @@ export default function Home() {
   const router = useRouter();
   const [error, setError] = useState<{ key: MessageKey; vars?: Record<string, string | number> } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [relocking, setRelocking] = useState(false);
 
   const market = MARKETS[marketId] ?? MARKETS[DEFAULT_MARKET];
   const currency: Currency = resolveCurrency(market, storedCurrency);
@@ -41,14 +42,14 @@ export default function Home() {
   const t = translator(localeId);
   const priced = priceCart(lines, currency);
   const locked = checkout.locked && checkout.session !== null;
-  const frozen = locked || busy;
+  const frozen = locked || busy || relocking;
   const customerValid = isCustomerValid(customer);
 
   useEffect(() => {
     document.cookie = `${LOCALE_COOKIE}=${localeId}; path=/; max-age=31536000; samesite=lax`;
   }, [localeId]);
 
-  async function startCheckout() {
+  async function startCheckout(currencyOverride?: Currency) {
     setTouched(true);
     if (!customerValid) return;
     const id = ++requestId.current;
@@ -58,7 +59,12 @@ export default function Home() {
       const res = await fetch("/api/payment-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lines, market: market.id, currency, customer: normalizeCustomer(customer) }),
+        body: JSON.stringify({
+          lines,
+          market: market.id,
+          currency: currencyOverride ?? currency,
+          customer: normalizeCustomer(customer),
+        }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const { session, publicKey } = await res.json();
@@ -86,9 +92,14 @@ export default function Home() {
     setStoredCurrency(MARKETS[id].currencies[0]);
   }
 
-  function changeCurrency(c: Currency) {
-    editCart();
+  /** A session is priced in one currency: mid-checkout the session is recreated in place and Flow remounted. */
+  async function changeCurrency(c: Currency) {
     setStoredCurrency(c);
+    if (!locked) return;
+    setRelocking(true);
+    setCheckout(NO_CHECKOUT);
+    await startCheckout(c);
+    setRelocking(false);
   }
 
   return (
@@ -128,13 +139,14 @@ export default function Home() {
           <CustomerForm value={customer} disabled={frozen} showErrors={touched} t={t} onChange={setCustomer} />
         )}
 
-        {!locked && priced.length > 0 && (
-          <button className="btn" onClick={startCheckout} disabled={busy || (touched && !customerValid)}>
+        {!locked && !relocking && priced.length > 0 && (
+          <button className="btn" onClick={() => startCheckout()} disabled={busy || (touched && !customerValid)}>
             {busy ? t("preparing") : t("checkout")}
           </button>
         )}
         {error && <p className="error">{t(error.key, error.vars)}</p>}
 
+        {relocking && <p className="muted">{t("preparing")}</p>}
         {locked && (
           <>
             <button className="btn btn-ghost" onClick={editCart}>

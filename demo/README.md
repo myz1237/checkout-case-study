@@ -70,7 +70,7 @@ Any future expiry and any 3-digit CVV. Full list: [Checkout.com test cards](http
 | iDEAL (NL market) | bank **TESTNL2A**, then **SUCCESS** (or FAILURE) on the simulator | Redirect to the iDEAL test page, then back to the success (or failure) page |
 | Apple Pay | Safari on an Apple Pay device, enrolled domain | Apple Pay button above the card form |
 
-Switch market with the segmented control (prices, currency and payment methods change), currency with the first dropdown (each market has its own price list per currency; iDEAL disappears outside EUR) and language with the second: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
+Switch market with the segmented control (prices, currency and payment methods change), currency with the first dropdown (each market has its own price list per currency; iDEAL disappears outside EUR; mid-checkout the session is recreated in place) and language with the second: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
 
 ## Deploy to Vercel
 

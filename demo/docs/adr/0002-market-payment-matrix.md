@@ -18,8 +18,9 @@ A `Market` record drives everything per market:
 
 Every payment session sends an explicit `enabled_payment_methods` list, filtered by the chosen
 currency (iDEAL settles only in EUR). Prices are a separate hard-coded list per currency, not an
-FX conversion. Switching market or currency while a session is open discards that session,
-because a session is priced in one currency.
+FX conversion. A session is priced in one currency: switching market mid-checkout returns to the
+cart (country and methods change too), switching currency recreates the session in place and
+remounts Flow.
 
 Credentials are resolved per market as well (`lib/credentials.ts`): a market can be processed
 through its own account / processing channel via `CKO_<MARKET>_*` variables, otherwise it uses
