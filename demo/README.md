@@ -77,7 +77,7 @@ Switch market with the segmented control (prices, currency and payment methods c
 
 `POST /api/webhooks` receives Checkout.com webhooks. Every request must carry the `Authorization` header value and a valid `Cko-Signature` (HMAC-SHA256 of the raw body) matching `CKO_WH_AUTH_HEADER_KEY` and `CKO_WH_SIGN_KEY`; anything else is rejected with 401. `payment_approved`, `payment_captured` and `payment_declined` are logged to the server console (Vercel → Logs), other events are acknowledged and ignored.
 
-To register it: Dashboard → Developers → Webhooks → New webhook → URL `https://<your-domain>/api/webhooks`, select the three payment events, set the Authorization header key and copy the signature key into the environment variables. Webhooks are registered per account, so events for the NL market (processed by the shared sandbox) only arrive if that account has the webhook too.
+To register it: Dashboard → Developers → Webhooks → New webhook → URL `https://<your-domain>/api/webhooks`, select the three payment events **from the Gateway category** (the Simulator category only fires for the Dashboard's test button; real payments never match it), set the Authorization header key and copy the signature key into the environment variables. Webhooks are registered per account, so events for the NL market (processed by the shared sandbox) only arrive if that account has the webhook too.
 
 ## Deploy to Vercel
 
