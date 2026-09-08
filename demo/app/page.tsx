@@ -106,9 +106,13 @@ export default function Home() {
   return (
     <main className="page">
       <header className="masthead">
-        <Logo />
-        <h1>Tri Case</h1>
-        <p className="muted">{t("tagline")}</p>
+        <div className="brand">
+          <Logo size={44} />
+          <div>
+            <h1>Tri Case</h1>
+            <p className="muted">{t("tagline")}</p>
+          </div>
+        </div>
         <div className="controls">
           <MarketSwitch value={market.id} disabled={busy} t={t} onChange={changeMarket} />
           <CurrencySelect value={currency} options={market.currencies} label={t("currency")} disabled={busy} onChange={changeCurrency} />

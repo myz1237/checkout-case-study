@@ -19,8 +19,10 @@ export default async function FailurePage({ searchParams }: Props) {
   return (
     <main className="page">
       <header className="masthead">
-        <Logo />
-        <h1>Tri Case</h1>
+        <div className="brand">
+          <Logo size={44} />
+          <h1>Tri Case</h1>
+        </div>
       </header>
       <section className="panel">
         <h2 className="error">{outcome.kind === "unavailable" ? t("failed_check_title") : t("failed_title")}</h2>

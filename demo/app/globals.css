@@ -23,7 +23,7 @@ html, body {
   padding: 24px 16px 64px;
 }
 
-.masthead h1 { margin: 0; font-size: 1.75rem; letter-spacing: 0.02em; }
+.masthead h1 { margin: 0; font-size: 1.75rem; line-height: 1.1; letter-spacing: 0.02em; }
 .muted { color: #6b6f5a; margin-top: 4px; }
 .error { color: var(--error); }
 .success { color: var(--success); }
@@ -93,12 +93,13 @@ html, body {
   border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer;
 }
 
-.masthead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; }
-.masthead .muted { flex: 1 1 auto; }
+.masthead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand .muted { margin: 2px 0 0; font-size: 0.9rem; }
 .segmented { display: inline-flex; border: 1px solid var(--ink); border-radius: 8px; overflow: hidden; }
 .segmented button {
   appearance: none; border: 0; background: #fff; color: var(--ink);
-  padding: 8px 14px; font-size: 0.9rem; cursor: pointer;
+  height: 100%; padding: 0 14px; font-size: 0.9rem; cursor: pointer;
 }
 .segmented button + button { border-left: 1px solid var(--ink); }
 .segmented button.active { background: var(--ink); color: var(--paper); }
@@ -118,9 +119,10 @@ a.btn { display: inline-block; text-decoration: none; }
 .customer input:disabled { background: #f6f6f1; color: #6b6f5a; }
 .field-error { color: var(--error); font-size: 0.85rem; }
 
-.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-left: auto; }
+.controls > * { height: 38px; }
 .language select {
-  padding: 8px 10px; font-size: 0.9rem; border: 1px solid var(--ink); border-radius: 8px; background: #fff; color: var(--ink);
+  height: 38px; padding: 0 10px; font-size: 0.9rem; border: 1px solid var(--ink); border-radius: 8px; background: #fff; color: var(--ink);
 }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 

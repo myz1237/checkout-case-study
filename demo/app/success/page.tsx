@@ -27,8 +27,10 @@ export default async function SuccessPage({ searchParams }: Props) {
   return (
     <main className="page">
       <header className="masthead">
-        <Logo />
-        <h1>Tri Case</h1>
+        <div className="brand">
+          <Logo size={44} />
+          <h1>Tri Case</h1>
+        </div>
       </header>
       <section className="panel">
         <h2 className={paid ? "success" : "error"}>{heading}</h2>
