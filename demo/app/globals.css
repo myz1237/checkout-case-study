@@ -117,3 +117,9 @@ a.btn { display: inline-block; text-decoration: none; }
 .customer input[aria-invalid="true"] { border-color: var(--error); }
 .customer input:disabled { background: #f6f6f1; color: #6b6f5a; }
 .field-error { color: var(--error); font-size: 0.85rem; }
+
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.language select {
+  padding: 8px 10px; font-size: 0.9rem; border: 1px solid var(--ink); border-radius: 8px; background: #fff; color: var(--ink);
+}
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

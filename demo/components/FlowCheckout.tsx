@@ -7,11 +7,14 @@ import {
   type Component,
   type PayPaymentSessionSuccessfulResponse,
 } from "@checkout.com/checkout-web-components";
+import { flowAppearance } from "@/lib/flow-appearance";
 
 type Props = {
   paymentSession: Record<string, unknown>;
   /** Pre-fills Flow's cardholder name field (shown at the top of the card form). */
   cardholderName?: string;
+  /** Flow display language; changing it re-initialises Flow on the same session. */
+  locale: string;
   onPaymentCompleted: (payment: PayPaymentSessionSuccessfulResponse) => void;
   onError?: (error: CheckoutError) => void;
 };
@@ -24,6 +27,7 @@ type Props = {
 export default function FlowCheckout({
   paymentSession,
   cardholderName,
+  locale,
   onPaymentCompleted,
   onError,
 }: Props) {
@@ -51,6 +55,8 @@ export default function FlowCheckout({
               ? "production"
               : "sandbox",
           paymentSession,
+          locale,
+          appearance: flowAppearance,
           componentOptions: {
             card: {
               displayCardholderName: "top",
@@ -79,7 +85,7 @@ export default function FlowCheckout({
       cancelled = true;
       component?.unmount();
     };
-  }, [paymentSession, cardholderName]);
+  }, [paymentSession, cardholderName, locale]);
 
   return (
     <div className="flow-wrapper">

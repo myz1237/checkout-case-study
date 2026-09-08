@@ -25,7 +25,7 @@ export const MARKETS: Record<MarketId, Market> = {
     country: "HK",
     currency: "HKD",
     defaultLocale: "en",
-    locales: ["en", "zh-hk"],
+    locales: ["en", "zh-HK"],
     // Cards plus Apple Pay for the mostly-iPhone audience. No Google Pay by design.
     paymentMethods: ["card", "applepay"],
   },

@@ -5,11 +5,13 @@ import { useCallback, useState } from "react";
 import CartSummary from "@/components/CartSummary";
 import CustomerForm from "@/components/CustomerForm";
 import FlowCheckout from "@/components/FlowCheckout";
+import LanguageSelect from "@/components/LanguageSelect";
 import MarketSwitch from "@/components/MarketSwitch";
 import ProductGrid from "@/components/ProductGrid";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { addToCart, priceCart, setQuantity, type CartLine } from "@/lib/cart";
 import { EMPTY_CUSTOMER, isCustomerValid, normalizeCustomer, type Customer } from "@/lib/customer";
+import { intlLocale, resolveLocale, type LocaleId } from "@/lib/locales";
 import { DEFAULT_MARKET, MARKETS, type MarketId } from "@/lib/markets";
 
 type Session = Record<string, unknown> & { id: string };
@@ -17,6 +19,7 @@ type Checkout = { locked: boolean; session: Session | null };
 
 export default function Home() {
   const [marketId, setMarketId] = usePersistentState<MarketId>("tricase.market", DEFAULT_MARKET);
+  const [storedLocale, setStoredLocale] = usePersistentState<string>("tricase.locale", "");
   const [lines, setLines, cartReady] = usePersistentState<CartLine[]>("tricase.cart", []);
   const [customer, setCustomer] = usePersistentState<Customer>("tricase.customer", EMPTY_CUSTOMER);
   const [touched, setTouched] = useState(false);
@@ -31,7 +34,8 @@ export default function Home() {
 
   const market = MARKETS[marketId] ?? MARKETS[DEFAULT_MARKET];
   const currency = market.currency;
-  const locale = market.defaultLocale;
+  const localeId: LocaleId = resolveLocale(market, storedLocale);
+  const locale = intlLocale(localeId);
   const priced = priceCart(lines, currency);
   const locked = checkout.locked && checkout.session !== null;
   const customerValid = isCustomerValid(customer);
@@ -65,6 +69,8 @@ export default function Home() {
     // A session is priced in one currency; switching market invalidates it.
     editCart();
     setMarketId(id);
+    // Each market has its own default language; a switch should not carry the old one over.
+    setStoredLocale(MARKETS[id].defaultLocale);
   }
 
   return (
@@ -72,7 +78,10 @@ export default function Home() {
       <header className="masthead">
         <h1>Tri Case</h1>
         <p className="muted">iPhone cases · Hong Kong & the Netherlands</p>
-        <MarketSwitch value={market.id} onChange={changeMarket} />
+        <div className="controls">
+          <MarketSwitch value={market.id} onChange={changeMarket} />
+          <LanguageSelect value={localeId} options={market.locales} onChange={setStoredLocale} />
+        </div>
       </header>
 
       <ProductGrid
@@ -113,6 +122,7 @@ export default function Home() {
             <FlowCheckout
               paymentSession={checkout.session!}
               cardholderName={normalizeCustomer(customer).name}
+              locale={localeId}
               onPaymentCompleted={(p) => router.push(`/success?cko-payment-id=${encodeURIComponent(p.id)}`)}
               onError={() => setError("Something went wrong with the payment. Please try again.")}
             />
