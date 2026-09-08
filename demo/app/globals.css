@@ -53,3 +53,42 @@ html, body {
 
 .flow-wrapper { margin-top: 16px; }
 #flow-container { min-height: 120px; }
+
+.grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.product {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.product h3 { margin: 8px 0 0; font-size: 1rem; }
+.product .muted { margin: 0; font-size: 0.9rem; flex: 1; }
+.case-art { width: 100%; height: 160px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+.btn-small { padding: 8px 14px; font-size: 0.9rem; }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  margin-bottom: 8px;
+}
+.btn-ghost:hover { background: #f1f2ea; }
+
+.cart { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+.cart td, .cart th { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: left; }
+.cart tfoot th { border-bottom: 0; font-size: 1.05rem; }
+.cart .money { text-align: right; white-space: nowrap; }
+.cart .qty { white-space: nowrap; }
+.cart .qty button {
+  width: 28px; height: 28px; margin: 0 6px;
+  border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer;
+}

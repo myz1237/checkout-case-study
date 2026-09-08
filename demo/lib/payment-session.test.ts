@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { buildPaymentSessionRequest } from "./payment-session";
 
+const lines = [
+  { productId: "moss-silicone", name: "Moss Silicone Case", quantity: 2, unitPrice: 19900, lineTotal: 39800 },
+  { productId: "tri-grip", name: "Tri Grip Case", quantity: 1, unitPrice: 24900, lineTotal: 24900 },
+];
+
 const base = {
-  amount: 19900,
-  currency: "HKD",
+  lines,
+  currency: "HKD" as const,
   reference: "ORD-1",
   country: "HK",
   origin: "http://localhost:3000",
@@ -11,13 +16,17 @@ const base = {
 };
 
 describe("buildPaymentSessionRequest", () => {
-  it("maps the storefront input onto the Checkout.com request shape", () => {
+  it("sums the cart and maps lines onto the Checkout.com request shape", () => {
     expect(buildPaymentSessionRequest(base)).toEqual({
-      amount: 19900,
+      amount: 64700,
       currency: "HKD",
       reference: "ORD-1",
       processing_channel_id: "pc_test",
       billing: { address: { country: "HK" } },
+      items: [
+        { reference: "moss-silicone", name: "Moss Silicone Case", quantity: 2, unit_price: 19900, total_amount: 39800 },
+        { reference: "tri-grip", name: "Tri Grip Case", quantity: 1, unit_price: 24900, total_amount: 24900 },
+      ],
       success_url: "http://localhost:3000/success",
       failure_url: "http://localhost:3000/failure",
     });
@@ -29,8 +38,7 @@ describe("buildPaymentSessionRequest", () => {
     expect(req.failure_url).toBe("https://shop.example/failure");
   });
 
-  it("rejects non-integer or non-positive amounts", () => {
-    expect(() => buildPaymentSessionRequest({ ...base, amount: 199.5 })).toThrow();
-    expect(() => buildPaymentSessionRequest({ ...base, amount: 0 })).toThrow();
+  it("rejects an empty cart", () => {
+    expect(() => buildPaymentSessionRequest({ ...base, lines: [] })).toThrow();
   });
 });
