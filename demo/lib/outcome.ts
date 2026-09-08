@@ -10,11 +10,7 @@ export type Outcome =
   | { kind: "not_found"; payment: null; paymentId: string; market: null }
   | { kind: "unavailable"; payment: null; paymentId: string; market: null };
 
-/**
- * Resolve the outcome page state from the query string, always via Get payment details.
- * The `market` parameter (which we put on the redirect URLs) says which credentials
- * created the payment; without it every configured credential set is tried.
- */
+/** Resolves an outcome page from the query string via Get payment details, using the market's credentials or trying every set. */
 export async function loadOutcome(idParam: unknown, marketParam: unknown): Promise<Outcome> {
   const paymentId = parsePaymentId(idParam);
   if (!paymentId) return { kind: "missing", payment: null, paymentId: null, market: null };

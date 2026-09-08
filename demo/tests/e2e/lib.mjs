@@ -1,8 +1,4 @@
-/**
- * Shared helpers for the end-to-end scenarios. They drive a running storefront
- * (E2E_BASE_URL, default http://localhost:3000) with Playwright and make real
- * sandbox payments, so they need the same .env.local as the app.
- */
+/** Shared Playwright helpers for the scenarios; they drive E2E_BASE_URL and make real sandbox payments. */
 import { mkdirSync } from "node:fs";
 import { chromium } from "playwright";
 
@@ -87,9 +83,7 @@ export async function complete3ds(page, timeoutMs = 45000) {
           await f.getByRole("button", { name: /continue/i }).click();
           return true;
         }
-      } catch {
-        // Frame navigated away while we were looking; keep polling.
-      }
+      } catch {}
     }
     if (/\/(success|failure)/.test(page.url())) return false;
     await page.waitForTimeout(800);

@@ -7,11 +7,7 @@ import { serverLocale } from "@/lib/server-locale";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-/**
- * Landing page for failed redirect flows (failure_url). The verdict comes from
- * Checkout.com, not the URL: a payment that actually succeeded is sent to /success.
- * The cart is kept so the customer can retry.
- */
+/** Failure landing page (failure_url); the verdict is read back from Checkout.com and the cart is kept for a retry. */
 export default async function FailurePage({ searchParams }: Props) {
   const [params, { locale, t }] = await Promise.all([searchParams, serverLocale()]);
   const outcome = await loadOutcome(params["cko-payment-id"], params.market);

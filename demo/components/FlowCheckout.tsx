@@ -12,26 +12,15 @@ import type { Translate } from "@/lib/i18n";
 
 type Props = {
   paymentSession: Record<string, unknown>;
-  /** Public key of the account that created the session. */
   publicKey: string;
-  /** Pre-fills Flow's cardholder name field (shown at the top of the card form). */
   cardholderName?: string;
-  /** Flow display language; changing it re-initialises Flow on the same session. */
   locale: string;
   t: Translate;
   onPaymentCompleted: (payment: PayPaymentSessionSuccessfulResponse) => void;
   onError?: (error: CheckoutError) => void;
 };
 
-/**
- * Mounts Checkout.com Flow into a div. The component script is fetched at
- * runtime from the Checkout.com CDN by the official loader; nothing that
- * touches card data is bundled or hosted by us.
- *
- * Give it a `key` that includes the session id and locale so a change
- * remounts the component (and its loading state) rather than re-initialising
- * Flow inside a live instance.
- */
+/** Mounts Checkout.com Flow; the component script is loaded from the Checkout.com CDN at runtime. Key it by session id and locale so changes remount it. */
 export default function FlowCheckout({
   paymentSession,
   publicKey,
@@ -44,7 +33,6 @@ export default function FlowCheckout({
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
 
-  // Keep latest callbacks without re-mounting Flow when they change.
   const completedRef = useRef(onPaymentCompleted);
   const errorRef = useRef(onError);
   useEffect(() => {
@@ -81,7 +69,6 @@ export default function FlowCheckout({
           },
           onError: (_c, error) => {
             if (cancelled) return;
-            // Declines are already explained inline by Flow, and the customer can retry there.
             if (error.code === "payment_request_declined") return;
             console.error("Flow error", error);
             errorRef.current?.(error);

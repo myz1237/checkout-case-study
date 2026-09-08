@@ -1,8 +1,4 @@
-/**
- * The public origin of the storefront, used for the redirect URLs on the payment session.
- * Precedence: explicit SITE_URL env, then proxy headers, then the request URL.
- * `req.url` alone is not enough behind a reverse proxy running `next start`.
- */
+/** Public origin for the session's redirect URLs: SITE_URL, then proxy headers, then the request URL. */
 export function siteOrigin(req: Request): string {
   const configured = process.env.SITE_URL?.trim().replace(/\/+$/, "");
   if (configured) return configured;

@@ -29,15 +29,7 @@ function readRaw(kind: Kind, key: string): string | null {
   }
 }
 
-/**
- * useState backed by Web Storage, exposed through useSyncExternalStore so the
- * server render and the first client render both use `initial` (no hydration
- * mismatch) and the stored value takes over immediately after hydration.
- *
- * `validate` guards against stale or foreign data in storage: anything that
- * does not pass falls back to `initial` instead of crashing the page.
- * When storage is blocked or full the hook keeps working in memory.
- */
+/** useState backed by Web Storage via useSyncExternalStore; `validate` rejects bad stored data, and an in-memory copy keeps it working when storage is unavailable. */
 export function usePersistentState<T>(
   key: string,
   initial: T,
@@ -63,7 +55,6 @@ export function usePersistentState<T>(
     [key],
   );
 
-  // Snapshots must be referentially stable for identical content; cache by raw string.
   const cacheRef = useRef<{ raw: string | null; value: T }>({ raw: null, value: initial });
   const getSnapshot = useCallback((): T => {
     const cache = cacheRef.current;
@@ -75,9 +66,7 @@ export function usePersistentState<T>(
         try {
           const parsed: unknown = JSON.parse(raw);
           if (!validate || validate(parsed)) cache.value = parsed as T;
-        } catch {
-          // Unreadable value: keep `initial`.
-        }
+        } catch {}
       }
     }
     return cache.value;
@@ -97,9 +86,7 @@ export function usePersistentState<T>(
       memory.set(key, raw);
       try {
         getStorage(kind)?.setItem(key, raw);
-      } catch {
-        // Storage full or disabled: the in-memory copy keeps this tab working.
-      }
+      } catch {}
       emit(key);
     },
     [getSnapshot, key, kind],

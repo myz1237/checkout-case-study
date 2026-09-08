@@ -6,7 +6,6 @@ export type Product = {
   id: string;
   name: string;
   description: string;
-  /** Fill colour of the placeholder artwork. */
   color: string;
   prices: Record<Currency, number>;
 };

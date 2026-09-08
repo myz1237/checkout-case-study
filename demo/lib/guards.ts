@@ -30,7 +30,6 @@ export function isCustomer(value: unknown): value is Customer {
 export type CheckoutState = {
   locked: boolean;
   session: (Record<string, unknown> & { id: string }) | null;
-  /** Public key of the account that created `session`; Flow must be initialised with it. */
   publicKey: string | null;
 };
 

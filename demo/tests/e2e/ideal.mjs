@@ -1,8 +1,4 @@
-/**
- * NL market → iDEAL → iDEAL test bank (TESTNL2A) → simulator outcome → our outcome page.
- * Needs NL credentials on an account with iDEAL enabled; otherwise the scenario is skipped.
- * IDEAL_OUTCOME=FAILURE exercises the failure page instead of the success page.
- */
+/** NL market → iDEAL → test bank TESTNL2A → simulator (IDEAL_OUTCOME, default SUCCESS) → our outcome page. Skipped when the account lacks iDEAL. */
 import { BASE, SHOTS, check, finish, openPage, freshStore, fillCustomer, addButton, checkoutButton, marketButton, getPayment } from "./lib.mjs";
 
 const wanted = (process.env.IDEAL_OUTCOME ?? "SUCCESS").toUpperCase();
@@ -26,7 +22,6 @@ await page.getByTestId("idealAccordionPanel").getByRole("button", { name: /Betal
 await page.waitForURL((u) => !u.href.startsWith(BASE), { timeout: 30000 });
 check(`redirected to iDEAL (${new URL(page.url()).host})`, /ideal\.nl/.test(page.url()));
 
-// The hosted page shows a QR code first; internet banking with the test bank works without a phone.
 await page.getByText(/Select your bank/i).first().click();
 await Promise.all([
   page.waitForURL((u) => !/ext\.pay\.ideal\.nl/.test(u.href), { timeout: 30000 }).catch(() => {}),

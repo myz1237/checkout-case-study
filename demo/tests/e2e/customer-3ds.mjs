@@ -12,7 +12,6 @@ async function fresh() {
   await addButton(page).nth(2).click(); // Paper 149
 }
 
-// 1. validation gate
 await fresh();
 await checkoutButton(page).click();
 check("empty customer shows both field errors", (await page.locator(".field-error").count()) === 2);
@@ -24,7 +23,6 @@ check("errors clear when valid", (await page.locator(".field-error").count()) ==
 await page.reload();
 check("customer persists across reload", (await page.getByLabel(/^(Email|E-mail|電郵)/).inputValue()) === "jia.tsang@example.com");
 
-// 2. session carries customer; Flow cardholder prefilled
 await checkoutButton(page).click();
 await page.waitForSelector("#flow-container iframe", { timeout: 30000 });
 await page.waitForTimeout(1500);
@@ -33,7 +31,6 @@ check("form disabled while locked", await page.getByLabel(/^(Email|E-mail|電郵
 const ch = await cardholderValue();
 check(`Flow cardholder prefilled ("${ch}")`, ch === "Jia Tsang");
 
-// 3. 3DS challenge card -> challenge -> success page
 await fillCard(page, { name: null, number: "4010061700000021" });
 await clickFlowPay(page);
 const challenged = await complete3ds(page);
@@ -46,7 +43,6 @@ check(`payment 3ds challenged=${p["3ds"]?.challenged} eci=${p["3ds"]?.eci} statu
 check(`payment customer email attached (${p.customer?.email})`, p.customer?.email === "jia.tsang@example.com");
 check(`cardholder name on source (${p.source?.name})`, p.source?.name === "Jia Tsang");
 
-// 4. 3DS not-authenticated card -> failure page
 await fresh();
 await page.getByLabel(/^(Full name|Volledige naam|姓名)/).fill("Jia Tsang");
 await page.getByLabel(/^(Email|E-mail|電郵)/).fill("jia.tsang@example.com");
@@ -63,7 +59,6 @@ await page.getByRole("link", { name: /Back to cart|Terug naar winkelwagen|返回
 await page.waitForURL(`${BASE}/`);
 check("cart kept after 3DS failure", (await page.getByTestId("cart-total").innerText()) === "HK$149.00");
 
-// 5. frictionless card in NL (EUR) -> redirect success without challenge
 await marketButton(page, "NL").click();
 await checkoutButton(page).click();
 await fillCard(page, { name: null, number: "4485040371536584" });

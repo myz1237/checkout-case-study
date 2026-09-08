@@ -1,24 +1,16 @@
-/**
- * Pure builders for the Checkout.com Payment Session request.
- * Kept free of I/O so the request shape can be unit-tested.
- */
 import type { Currency } from "./catalog";
 import { cartTotal, type PricedLine } from "./cart";
 import type { Customer } from "./customer";
 import type { MarketId, PaymentMethod } from "./markets";
 
 export type PaymentSessionInput = {
-  /** Carried on the redirect URLs so the outcome pages know which credentials to use. */
   market: MarketId;
   lines: PricedLine[];
   currency: Currency;
   reference: string;
-  /** ISO 3166-1 alpha-2 billing country. */
   country: string;
-  /** Explicit allow-list so account-level extras (e.g. Google Pay) never leak into Flow. */
   paymentMethods: PaymentMethod[];
   customer: Customer;
-  /** Origin of the storefront, used to build the success / failure URLs. */
   origin: string;
   processingChannelId: string;
 };
@@ -43,7 +35,6 @@ export type PaymentSessionRequest = {
   billing: { address: { country: string } };
   enabled_payment_methods: PaymentMethod[];
   customer: { name: string; email: string };
-  /** Always request 3DS: SCA is mandatory in the EEA and it is cheap insurance elsewhere. */
   "3ds": { enabled: true };
   items: PaymentSessionItem[];
   success_url: string;
@@ -75,7 +66,6 @@ export function buildPaymentSessionRequest(
       unit_price: l.unitPrice,
       total_amount: l.lineTotal,
     })),
-    // Checkout.com appends its own cko-* parameters to these with `&`.
     success_url: `${origin}/success?market=${input.market}`,
     failure_url: `${origin}/failure?market=${input.market}`,
   };

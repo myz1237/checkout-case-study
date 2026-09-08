@@ -22,7 +22,6 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => ({}))) as Body;
     const market = getMarket(body.market);
-    // Amounts are always recomputed from the catalogue; the browser only sends ids and quantities.
     if (!isCartLines(body.lines)) {
       return NextResponse.json({ error: "lines_invalid" }, { status: 400 });
     }
@@ -48,7 +47,6 @@ export async function POST(req: Request) {
       processingChannelId: creds.processingChannelId,
     });
     const session = await createPaymentSession(creds, request);
-    // The public key must belong to the account that created the session.
     return NextResponse.json({ session, publicKey: creds.publicKey });
   } catch (err) {
     if (err instanceof CheckoutApiError) {

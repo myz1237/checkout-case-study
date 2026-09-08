@@ -1,12 +1,4 @@
-/**
- * Runs every end-to-end scenario against a running storefront and reports a summary.
- *
- *   pnpm dev                 # in one terminal
- *   pnpm test:e2e            # in another (loads .env.local for the API checks)
- *
- * Each scenario makes real sandbox payments through Flow, the 3DS simulator and the
- * iDEAL test bank, so the whole run takes a few minutes.
- */
+/** Runs every end-to-end scenario against a running storefront (`pnpm dev`) and prints a summary. */
 import { spawnSync } from "node:child_process";
 import { BASE } from "./lib.mjs";
 

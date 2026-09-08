@@ -64,11 +64,7 @@ export type PaymentDetails = {
 
 type PaymentAction = { type: string; response_summary?: string; processed_on?: string };
 
-/**
- * Get Payment Details plus, for unsuccessful payments, the decline reason from
- * the latest action (the details endpoint itself carries no response_summary).
- * Returns null when this account does not know the payment.
- */
+/** Get Payment Details, adding the decline reason from the latest action; null when the account does not know the payment. */
 export async function getPayment(creds: Credentials, id: string): Promise<PaymentDetails | null> {
   const path = `/payments/${encodeURIComponent(id)}`;
   try {

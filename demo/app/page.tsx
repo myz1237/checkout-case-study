@@ -25,7 +25,6 @@ export default function Home() {
   const [lines, setLines, cartReady] = usePersistentState<CartLine[]>("tricase.cart", EMPTY_LINES, "local", isCartLines);
   const [customer, setCustomer] = usePersistentState<Customer>("tricase.customer", EMPTY_CUSTOMER, "local", isCustomer);
   const [touched, setTouched] = useState(false);
-  // Same storage as the cart so every tab agrees on whether the checkout is locked.
   const [checkout, setCheckout] = usePersistentState<CheckoutState>("tricase.checkout", NO_CHECKOUT, "local", isCheckoutState);
   const requestId = useRef(0);
   const router = useRouter();
@@ -39,11 +38,9 @@ export default function Home() {
   const t = translator(localeId);
   const priced = priceCart(lines, currency);
   const locked = checkout.locked && checkout.session !== null;
-  // Nothing that feeds the session may change while it is being created or in use.
   const frozen = locked || busy;
   const customerValid = isCustomerValid(customer);
 
-  // Mirror the language into a cookie so the server-rendered outcome pages can use it.
   useEffect(() => {
     document.cookie = `${LOCALE_COOKIE}=${localeId}; path=/; max-age=31536000; samesite=lax`;
   }, [localeId]);
@@ -62,7 +59,6 @@ export default function Home() {
       });
       if (!res.ok) throw new Error(String(res.status));
       const { session, publicKey } = await res.json();
-      // Ignore a response that belongs to an earlier attempt (e.g. the market changed meanwhile).
       if (id === requestId.current) setCheckout({ locked: true, session, publicKey });
     } catch (err) {
       if (id === requestId.current) {
@@ -81,10 +77,8 @@ export default function Home() {
   }, [setCheckout]);
 
   function changeMarket(id: MarketId) {
-    // A session is priced in one currency; switching market invalidates it.
     editCart();
     setMarketId(id);
-    // Each market has its own default language; a switch should not carry the old one over.
     setStoredLocale(MARKETS[id].defaultLocale);
   }
 

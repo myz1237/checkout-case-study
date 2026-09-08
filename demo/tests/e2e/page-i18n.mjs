@@ -18,7 +18,6 @@ await page.getByRole("button", { name: "結帳" }).click();
 await page.waitForSelector("#flow-container iframe", { timeout: 30000 });
 check("zh-HK edit cart button", (await page.getByRole("button", { name: "修改購物車" }).count()) === 1);
 
-// success page in zh-HK via 3DS challenge card (redirect path)
 await fillCard(page, { name: null, number: "4010061700000021" });
 await clickFlowPay(page);
 await complete3ds(page);
@@ -28,7 +27,6 @@ t = await text();
 check("zh-HK success page", /訂單已確認/.test(t) && /狀態/.test(t) && /繼續購物/.test(t));
 console.log(t.slice(0, 200));
 
-// Dutch market
 await page.goto(BASE);
 await marketButton(page, "HK").click(); // ensure HK then switch to NL
 await marketButton(page, "NL").click();

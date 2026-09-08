@@ -2,7 +2,6 @@
 import { BASE, SHOTS, check, finish, openPage, freshStore, fillCustomer, addButton, checkoutButton, fillCard, clickFlowPay, complete3ds, waitForOutcome, createDeclinedPayment } from "./lib.mjs";
 const { browser, page } = await openPage();
 
-// 1. synchronous success lands on /success with details, cart cleared
 await freshStore(page);
 await addButton(page).nth(1).click(); // Forest 299
 await fillCustomer(page);
@@ -22,13 +21,11 @@ await page.getByRole("link", { name: /Continue shopping|Verder winkelen|繼續�
 await page.waitForURL(`${BASE}/`);
 check("cart cleared after success", (await page.getByText(/Your cart is empty|winkelwagen is leeg|購物車是空的/).count()) === 1);
 
-// 2. unknown id
 await page.goto(`${BASE}/success?cko-payment-id=pay_aaaaaaaaaaaaaaaaaaaaaaaaaa`);
 check("unknown id handled", (await page.getByText(/could not find payment/).count()) === 1);
 await page.goto(`${BASE}/success`);
 check("missing id handled", (await page.getByText(/No payment reference/).count()) === 1);
 
-// 3. failure page with a declined payment; cart kept
 const declined = await createDeclinedPayment();
 console.log("declined payment:", declined.id, declined.status, declined.response_summary);
 await page.goto(BASE);
@@ -43,7 +40,6 @@ await page.getByRole("link", { name: /Back to cart|Terug naar winkelwagen|返回
 await page.waitForURL(`${BASE}/`);
 check("cart kept and unlocked after failure", (await page.getByTestId("cart-total").innerText()) === "HK$199.00" && (await checkoutButton(page).count()) === 1);
 
-// 4. declined card through Flow (synchronous path): what does the customer see?
 await fillCustomer(page);
 await checkoutButton(page).click();
 await fillCard(page, { number: "4544249167673670" });

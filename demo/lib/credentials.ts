@@ -1,14 +1,8 @@
 import "server-only";
 import type { MarketId } from "./markets";
 
-/**
- * One set of Checkout.com credentials = one account / processing channel.
- * Merchants commonly process each region through its own entity, so the
- * storefront resolves credentials per market. The default set serves every
- * market; a market can override it with `CKO_<MARKET>_*` variables.
- */
+/** Checkout.com credentials resolved per market: the default set, or a `CKO_<MARKET>_*` override. */
 export type Credentials = {
-  /** Which set this is; used to find the right key again on the outcome pages. */
   market: MarketId | "default";
   secretKey: string;
   processingChannelId: string;
