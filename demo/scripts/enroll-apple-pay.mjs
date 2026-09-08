@@ -7,7 +7,7 @@
 const args = process.argv.slice(2);
 const marketIdx = args.indexOf("--market");
 const market = marketIdx >= 0 ? args[marketIdx + 1]?.toUpperCase() : null;
-const domain = args.filter((a, i) => i !== marketIdx && i !== marketIdx + 1)[0]?.trim();
+const domain = args.filter((a, i) => marketIdx < 0 || (i !== marketIdx && i !== marketIdx + 1))[0]?.trim();
 const secretKey = market ? process.env[`CKO_${market}_SECRET_KEY`] : process.env.CKO_SECRET_KEY;
 const environment = process.env.NEXT_PUBLIC_CKO_ENVIRONMENT === "production" ? "production" : "sandbox";
 const baseUrl = environment === "production" ? "https://api.checkout.com" : "https://api.sandbox.checkout.com";
