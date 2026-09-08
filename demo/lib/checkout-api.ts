@@ -58,3 +58,37 @@ export function createPaymentSession(
     body: JSON.stringify(body),
   });
 }
+
+/** The subset of Get Payment Details we render on the outcome pages. */
+export type PaymentDetails = {
+  id: string;
+  status: string;
+  approved: boolean;
+  amount: number;
+  currency: string;
+  reference?: string;
+  response_summary?: string;
+  source?: { type?: string; scheme?: string; last4?: string; name?: string };
+  "3ds"?: { challenged?: boolean; authentication_response?: string };
+};
+
+type PaymentAction = { type: string; response_summary?: string; processed_on?: string };
+
+/**
+ * Get Payment Details plus, for unsuccessful payments, the decline reason from
+ * the latest action (the details endpoint itself carries no response_summary).
+ */
+export async function getPayment(id: string): Promise<PaymentDetails | null> {
+  const path = `/payments/${encodeURIComponent(id)}`;
+  try {
+    const payment = await request<PaymentDetails>(path, { method: "GET" });
+    if (!payment.approved && !payment.response_summary) {
+      const actions = await request<PaymentAction[]>(`${path}/actions`, { method: "GET" }).catch(() => []);
+      payment.response_summary = actions[0]?.response_summary;
+    }
+    return payment;
+  } catch (err) {
+    if (err instanceof CheckoutApiError && err.status === 404) return null;
+    throw err;
+  }
+}

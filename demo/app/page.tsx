@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import CartSummary from "@/components/CartSummary";
 import FlowCheckout from "@/components/FlowCheckout";
@@ -20,7 +21,7 @@ export default function Home() {
     { locked: false, session: null },
     "session",
   );
-  const [paymentId, setPaymentId] = useState<string | null>(null);
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -56,7 +57,6 @@ export default function Home() {
   function changeMarket(id: MarketId) {
     // A session is priced in one currency; switching market invalidates it.
     editCart();
-    setPaymentId(null);
     setMarketId(id);
   }
 
@@ -94,22 +94,17 @@ export default function Home() {
         )}
         {error && <p className="error">{error}</p>}
 
-        {locked && !paymentId && (
+        {locked && (
           <>
             <button className="btn btn-ghost" onClick={editCart}>
               Edit cart
             </button>
             <FlowCheckout
               paymentSession={checkout.session!}
-              onPaymentCompleted={(p) => setPaymentId(p.id)}
-              onError={(e) => setError(e.message)}
+              onPaymentCompleted={(p) => router.push(`/success?cko-payment-id=${encodeURIComponent(p.id)}`)}
+              onError={() => setError("Something went wrong with the payment. Please try again.")}
             />
           </>
-        )}
-        {paymentId && (
-          <p className="success">
-            Payment approved (synchronous). Payment id: <code>{paymentId}</code>
-          </p>
         )}
       </section>
     </main>

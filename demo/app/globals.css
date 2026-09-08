@@ -102,3 +102,8 @@ html, body {
 }
 .segmented button + button { border-left: 1px solid var(--ink); }
 .segmented button.active { background: var(--ink); color: var(--paper); }
+
+.details { display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; margin: 16px 0; }
+.details dt { color: #6b6f5a; }
+.details dd { margin: 0; }
+a.btn { display: inline-block; text-decoration: none; }

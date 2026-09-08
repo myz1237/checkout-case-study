@@ -51,6 +51,8 @@ export default function FlowCheckout({
           onReady: () => setStatus("ready"),
           onPaymentCompleted: (_c, payment) => completedRef.current(payment),
           onError: (_c, error) => {
+            // Declines are already explained inline by Flow, and the customer can retry there.
+            if (error.code === "payment_request_declined") return;
             console.error("Flow error", error);
             errorRef.current?.(error);
           },
