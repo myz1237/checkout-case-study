@@ -11,7 +11,7 @@ import { useEffect } from "react";
 export default function CheckoutStorage({ action }: { action: "clear" | "unlock" }) {
   useEffect(() => {
     try {
-      sessionStorage.removeItem("tricase.checkout");
+      localStorage.removeItem("tricase.checkout");
       if (action === "clear") localStorage.removeItem("tricase.cart");
     } catch {
       // Storage unavailable; nothing to clean up.

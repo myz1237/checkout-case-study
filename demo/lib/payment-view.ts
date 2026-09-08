@@ -2,9 +2,15 @@ import type { PaymentDetails } from "./checkout-api";
 
 /** Statuses that mean the money side succeeded. */
 const SUCCESS_STATUSES = new Set(["Authorized", "Captured", "Paid", "Card Verified"]);
+/** Asynchronous methods (e.g. iDEAL) can land on success_url before the capture is final. */
+const PENDING_STATUSES = new Set(["Pending", "Authorization Pending", "Capture Pending"]);
 
 export function isSuccessful(payment: PaymentDetails): boolean {
   return payment.approved && SUCCESS_STATUSES.has(payment.status);
+}
+
+export function isPending(payment: PaymentDetails): boolean {
+  return PENDING_STATUSES.has(payment.status);
 }
 
 export function paymentMethodLabel(payment: PaymentDetails): string {

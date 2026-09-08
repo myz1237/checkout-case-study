@@ -23,6 +23,10 @@ type Props = {
  * Mounts Checkout.com Flow into a div. The component script is fetched at
  * runtime from the Checkout.com CDN by the official loader; nothing that
  * touches card data is bundled or hosted by us.
+ *
+ * Give it a `key` that includes the session id and locale so a change
+ * remounts the component (and its loading state) rather than re-initialising
+ * Flow inside a live instance.
  */
 export default function FlowCheckout({
   paymentSession,
@@ -63,9 +67,14 @@ export default function FlowCheckout({
               data: cardholderName ? { cardholderName } : undefined,
             },
           },
-          onReady: () => setStatus("ready"),
-          onPaymentCompleted: (_c, payment) => completedRef.current(payment),
+          onReady: () => {
+            if (!cancelled) setStatus("ready");
+          },
+          onPaymentCompleted: (_c, payment) => {
+            if (!cancelled) completedRef.current(payment);
+          },
           onError: (_c, error) => {
+            if (cancelled) return;
             // Declines are already explained inline by Flow, and the customer can retry there.
             if (error.code === "payment_request_declined") return;
             console.error("Flow error", error);

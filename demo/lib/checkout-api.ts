@@ -83,8 +83,8 @@ export async function getPayment(id: string): Promise<PaymentDetails | null> {
   try {
     const payment = await request<PaymentDetails>(path, { method: "GET" });
     if (!payment.approved && !payment.response_summary) {
-      const actions = await request<PaymentAction[]>(`${path}/actions`, { method: "GET" }).catch(() => []);
-      payment.response_summary = actions[0]?.response_summary;
+      const actions = await request<PaymentAction[] | null>(`${path}/actions`, { method: "GET" }).catch(() => null);
+      payment.response_summary = actions?.[0]?.response_summary;
     }
     return payment;
   } catch (err) {

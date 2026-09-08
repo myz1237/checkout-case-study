@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import CartSummary from "@/components/CartSummary";
 import CustomerForm from "@/components/CustomerForm";
 import FlowCheckout from "@/components/FlowCheckout";
@@ -11,23 +11,22 @@ import ProductGrid from "@/components/ProductGrid";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { addToCart, priceCart, setQuantity, type CartLine } from "@/lib/cart";
 import { EMPTY_CUSTOMER, isCustomerValid, normalizeCustomer, type Customer } from "@/lib/customer";
+import { isCartLines, isCheckoutState, isCustomer, isLocale, isMarket, type CheckoutState } from "@/lib/guards";
 import { intlLocale, resolveLocale, type LocaleId } from "@/lib/locales";
 import { DEFAULT_MARKET, MARKETS, type MarketId } from "@/lib/markets";
 
-type Session = Record<string, unknown> & { id: string };
-type Checkout = { locked: boolean; session: Session | null };
+const NO_CHECKOUT: CheckoutState = { locked: false, session: null };
+const EMPTY_LINES: CartLine[] = [];
 
 export default function Home() {
-  const [marketId, setMarketId] = usePersistentState<MarketId>("tricase.market", DEFAULT_MARKET);
-  const [storedLocale, setStoredLocale] = usePersistentState<string>("tricase.locale", "");
-  const [lines, setLines, cartReady] = usePersistentState<CartLine[]>("tricase.cart", []);
-  const [customer, setCustomer] = usePersistentState<Customer>("tricase.customer", EMPTY_CUSTOMER);
+  const [marketId, setMarketId] = usePersistentState<MarketId>("tricase.market", DEFAULT_MARKET, "local", isMarket);
+  const [storedLocale, setStoredLocale] = usePersistentState<string>("tricase.locale", "", "local", isLocale);
+  const [lines, setLines, cartReady] = usePersistentState<CartLine[]>("tricase.cart", EMPTY_LINES, "local", isCartLines);
+  const [customer, setCustomer] = usePersistentState<Customer>("tricase.customer", EMPTY_CUSTOMER, "local", isCustomer);
   const [touched, setTouched] = useState(false);
-  const [checkout, setCheckout] = usePersistentState<Checkout>(
-    "tricase.checkout",
-    { locked: false, session: null },
-    "session",
-  );
+  // Same storage as the cart so every tab agrees on whether the checkout is locked.
+  const [checkout, setCheckout] = usePersistentState<CheckoutState>("tricase.checkout", NO_CHECKOUT, "local", isCheckoutState);
+  const requestId = useRef(0);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -38,11 +37,14 @@ export default function Home() {
   const locale = intlLocale(localeId);
   const priced = priceCart(lines, currency);
   const locked = checkout.locked && checkout.session !== null;
+  // Nothing that feeds the session may change while it is being created or in use.
+  const frozen = locked || busy;
   const customerValid = isCustomerValid(customer);
 
   async function startCheckout() {
     setTouched(true);
     if (!customerValid) return;
+    const id = ++requestId.current;
     setBusy(true);
     setError(null);
     try {
@@ -52,16 +54,20 @@ export default function Home() {
         body: JSON.stringify({ lines, market: market.id, customer: normalizeCustomer(customer) }),
       });
       if (!res.ok) throw new Error(`Could not create payment session (${res.status})`);
-      setCheckout({ locked: true, session: await res.json() });
+      const session = await res.json();
+      // Ignore a response that belongs to an earlier attempt (e.g. the market changed meanwhile).
+      if (id === requestId.current) setCheckout({ locked: true, session });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unexpected error");
+      if (id === requestId.current) setError(err instanceof Error ? err.message : "Unexpected error");
     } finally {
-      setBusy(false);
+      if (id === requestId.current) setBusy(false);
     }
   }
 
   const editCart = useCallback(() => {
-    setCheckout({ locked: false, session: null });
+    requestId.current++;
+    setBusy(false);
+    setCheckout(NO_CHECKOUT);
     setError(null);
   }, [setCheckout]);
 
@@ -79,7 +85,7 @@ export default function Home() {
         <h1>Tri Case</h1>
         <p className="muted">iPhone cases · Hong Kong & the Netherlands</p>
         <div className="controls">
-          <MarketSwitch value={market.id} onChange={changeMarket} />
+          <MarketSwitch value={market.id} disabled={busy} onChange={changeMarket} />
           <LanguageSelect value={localeId} options={market.locales} onChange={setStoredLocale} />
         </div>
       </header>
@@ -87,7 +93,7 @@ export default function Home() {
       <ProductGrid
         currency={currency}
         locale={locale}
-        disabled={locked}
+        disabled={frozen}
         onAdd={(id) => setLines((prev) => addToCart(prev, id))}
       />
 
@@ -98,13 +104,13 @@ export default function Home() {
             lines={priced}
             currency={currency}
             locale={locale}
-            locked={locked}
+            locked={frozen}
             onQuantity={(id, q) => setLines((prev) => setQuantity(prev, id, q))}
           />
         )}
 
         {priced.length > 0 && (
-          <CustomerForm value={customer} disabled={locked} showErrors={touched} onChange={setCustomer} />
+          <CustomerForm value={customer} disabled={frozen} showErrors={touched} onChange={setCustomer} />
         )}
 
         {!locked && priced.length > 0 && (
@@ -120,6 +126,7 @@ export default function Home() {
               Edit cart
             </button>
             <FlowCheckout
+              key={`${checkout.session!.id}:${localeId}`}
               paymentSession={checkout.session!}
               cardholderName={normalizeCustomer(customer).name}
               locale={localeId}

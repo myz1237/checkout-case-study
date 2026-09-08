@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "enroll-apple-pay": "node --env-file=.env.local scripts/enroll-apple-pay.mjs",
+    "enroll-apple-pay": "node --env-file-if-exists=.env.local scripts/enroll-apple-pay.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

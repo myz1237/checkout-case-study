@@ -23,7 +23,7 @@ the merchant ever touching card data.
 5. Outcome:
    - synchronous (no 3DS challenge, Apple Pay): Flow raises `onPaymentCompleted` and we navigate to `/success?cko-payment-id=…`
    - redirect (3DS challenge, iDEAL): Checkout.com sends the shopper to the `success_url` / `failure_url` we passed, with `cko-payment-id` appended
-6. `/success` and `/failure` never trust the URL: they call **Get payment details** server-side and show status, amount, method, reference (and the decline reason from the payment's actions on failure). Success clears the cart; failure keeps it.
+6. `/success` and `/failure` never trust the URL: they call **Get payment details** server-side and show status, amount, method, reference (and the decline reason from the payment's actions on failure). A failed payment that lands on `/success` is sent to `/failure` and vice versa; a pending asynchronous payment is treated as placed. Success clears the cart; failure keeps it.
 
 ## Run it locally
 
@@ -42,8 +42,9 @@ Environment variables:
 | `CKO_PROCESSING_CHANNEL_ID` | server only | Processing channel the sessions are created on |
 | `NEXT_PUBLIC_CKO_PUBLIC_KEY` | browser | Public key with `payment-sessions:pay` and `vault-tokenization` |
 | `NEXT_PUBLIC_CKO_ENVIRONMENT` | both | `sandbox` or `production` |
+| `SITE_URL` | server only, optional | Public origin for the redirect URLs when running `next start` behind a proxy; not needed on Vercel or locally |
 
-Checks: `npm test` (unit tests for cart, pricing, session request, markets, locales), `npm run lint`, `npm run build`.
+Checks: `npm test` (unit tests for cart, pricing, session request, markets, locales, input guards, origin resolution), `npm run lint`, `npm run build`.
 
 ## Test it
 

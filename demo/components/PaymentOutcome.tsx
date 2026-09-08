@@ -2,22 +2,11 @@ import Link from "next/link";
 import type { PaymentDetails } from "@/lib/checkout-api";
 import { formatMoney } from "@/lib/cart";
 import type { Currency } from "@/lib/catalog";
-import { isSuccessful, paymentMethodLabel } from "@/lib/payment-view";
+import type { Outcome } from "@/lib/outcome";
+import { paymentMethodLabel } from "@/lib/payment-view";
 
-type Props = { payment: PaymentDetails | null; paymentId: string | null };
-
-export default function PaymentOutcome({ payment, paymentId }: Props) {
-  if (!paymentId) {
-    return <p className="muted">No payment reference was provided.</p>;
-  }
-  if (!payment) {
-    return (
-      <p className="muted">
-        We could not find payment <code>{paymentId}</code>.
-      </p>
-    );
-  }
-  const ok = isSuccessful(payment);
+export function PaymentDetailsList({ payment }: { payment: PaymentDetails }) {
+  const ok = payment.approved;
   return (
     <dl className="details" data-testid="payment-details">
       <dt>Status</dt>
@@ -40,6 +29,29 @@ export default function PaymentOutcome({ payment, paymentId }: Props) {
       )}
     </dl>
   );
+}
+
+/** Body shared by the outcome pages for the states that have no payment to show. */
+export function OutcomeNotice({ outcome }: { outcome: Outcome }) {
+  switch (outcome.kind) {
+    case "missing":
+      return <p className="muted">No payment reference was provided.</p>;
+    case "not_found":
+      return (
+        <p className="muted">
+          We could not find payment <code>{outcome.paymentId}</code>.
+        </p>
+      );
+    case "unavailable":
+      return (
+        <p className="muted">
+          We could not retrieve payment <code>{outcome.paymentId}</code> right now. If you were charged, you will
+          receive a confirmation email; please do not pay again.
+        </p>
+      );
+    default:
+      return <PaymentDetailsList payment={outcome.payment} />;
+  }
 }
 
 export function BackLink({ label }: { label: string }) {

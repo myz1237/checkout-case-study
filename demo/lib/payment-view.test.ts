@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSuccessful, parsePaymentId, paymentMethodLabel } from "./payment-view";
+import { isPending, isSuccessful, parsePaymentId, paymentMethodLabel } from "./payment-view";
 
 const base = { id: "pay_x", status: "Captured", approved: true, amount: 100, currency: "HKD" };
 
@@ -9,6 +9,8 @@ describe("payment view helpers", () => {
     expect(isSuccessful({ ...base, status: "Captured" })).toBe(true);
     expect(isSuccessful({ ...base, status: "Declined", approved: false })).toBe(false);
     expect(isSuccessful({ ...base, status: "Pending" })).toBe(false);
+    expect(isPending({ ...base, status: "Pending" })).toBe(true);
+    expect(isPending({ ...base, status: "Declined" })).toBe(false);
   });
 
   it("labels payment methods", () => {
