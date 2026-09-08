@@ -1,0 +1,17 @@
+# confidential case-study brief
+demo/request.pdf
+
+# local working notes and tickets
+.scratch/
+
+# environment files
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+# personal agent tooling, not part of the deliverable
+.agents/
+.claude/
+skills-lock.json
