@@ -44,6 +44,7 @@ Environment variables:
 | `NEXT_PUBLIC_CKO_ENVIRONMENT` | both | `sandbox` or `production` |
 | `SITE_URL` | server only, optional | Public origin for the redirect URLs when running `next start` behind a proxy; not needed on Vercel or locally |
 | `CKO_NL_SECRET_KEY`, `CKO_NL_PROCESSING_CHANNEL_ID`, `CKO_NL_PUBLIC_KEY` | server only, optional | Process the NL market through a different account / processing channel. Set all three or none; HK (and any market without an override) keeps the defaults |
+| `CKO_WH_AUTH_HEADER_KEY`, `CKO_WH_SIGN_KEY` | server only | Authorization header value and signature key of the webhook registered in the Dashboard |
 
 ## Tests
 
@@ -51,7 +52,7 @@ Everything lives under `tests/`:
 
 | Command | What runs |
 |---|---|
-| `pnpm test` | Unit tests in `tests/unit/` (Vitest): cart maths, pricing, session request builder, markets, locales, page copy, input guards, credentials, origin resolution |
+| `pnpm test` | Unit tests in `tests/unit/` (Vitest): cart maths, pricing, session request builder, markets, locales, page copy, input guards, credentials, origin resolution, webhook verification |
 | `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, iDEAL via the test bank, market, currency and language switching, outcome pages |
 | `pnpm lint`, `pnpm build` | ESLint and a production build |
 
@@ -72,6 +73,12 @@ Any future expiry and any 3-digit CVV. Full list: [Checkout.com test cards](http
 
 Switch market with the segmented control (prices, currency and payment methods change), currency with the first dropdown (each market has its own price list per currency; iDEAL disappears outside EUR; mid-checkout the session is recreated in place) and language with the second: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
 
+## Webhooks
+
+`POST /api/webhooks` receives Checkout.com webhooks. Every request must carry the `Authorization` header value and a valid `Cko-Signature` (HMAC-SHA256 of the raw body) matching `CKO_WH_AUTH_HEADER_KEY` and `CKO_WH_SIGN_KEY`; anything else is rejected with 401. `payment_approved`, `payment_captured` and `payment_declined` are logged to the server console (Vercel → Logs), other events are acknowledged and ignored.
+
+To register it: Dashboard → Developers → Webhooks → New webhook → URL `https://<your-domain>/api/webhooks`, select the three payment events, set the Authorization header key and copy the signature key into the environment variables. Webhooks are registered per account, so events for the NL market (processed by the shared sandbox) only arrive if that account has the webhook too.
+
 ## Deploy to Vercel
 
 1. Import the repository; set **Root Directory** to `demo`. Framework preset: Next.js.
@@ -90,12 +97,12 @@ Switch market with the segmented control (prices, currency and payment methods c
 - **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. In this demo the NL market is processed through the shared case-study sandbox (which has iDEAL) via the `CKO_NL_*` override, while HK uses a sandbox account that can enrol Apple Pay.
 - **Apple Pay is HK-only in this demo.** The NL account cannot enrol the domain (Flow shows the button, but Checkout.com rejects the Apple Pay session with 422), and Apple's sandbox does not cover the Netherlands. Adding `applepay` back to the NL market is a one-line change once its account has the domain enrolled.
 - Flow's Hong Kong locale must be passed as `zh-HK`; the lowercase `zh-hk` shown in the localization docs is ignored.
-- Not built (Part 3 optional items left out on purpose): webhooks and refunds. Both need a public URL and would sit naturally on the Vercel deployment.
+- Not built (Part 3 optional item left out on purpose): refunds.
 
 ## Layout
 
 ```
-app/                Next.js App Router: storefront page, /success, /failure, /api/payment-sessions
+app/                Next.js App Router: storefront page, /success, /failure, /api/payment-sessions, /api/webhooks
 components/         ProductGrid, CartSummary, CustomerForm, MarketSwitch, LanguageSelect, FlowCheckout, PaymentOutcome
 lib/                catalogue, cart maths, markets, locales, page copy (i18n), credentials, session request builder, Checkout.com API client
 hooks/              usePersistentState (Web Storage via useSyncExternalStore)
