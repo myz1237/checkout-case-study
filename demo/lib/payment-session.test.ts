@@ -23,6 +23,7 @@ describe("buildPaymentSessionRequest", () => {
       amount: 64700,
       currency: "HKD",
       reference: "ORD-1",
+      display_name: "Tri Case",
       processing_channel_id: "pc_test",
       billing: { address: { country: "HK" } },
       enabled_payment_methods: ["card", "applepay"],

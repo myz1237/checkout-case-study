@@ -29,10 +29,14 @@ export type PaymentSessionItem = {
   total_amount: number;
 };
 
+/** Shown on the Apple Pay sheet and other wallet UIs instead of the account's legal name. */
+export const STORE_DISPLAY_NAME = "Tri Case";
+
 export type PaymentSessionRequest = {
   amount: number;
   currency: string;
   reference: string;
+  display_name: string;
   processing_channel_id: string;
   billing: { address: { country: string } };
   enabled_payment_methods: PaymentMethod[];
@@ -56,6 +60,7 @@ export function buildPaymentSessionRequest(
     amount,
     currency: input.currency,
     reference: input.reference,
+    display_name: STORE_DISPLAY_NAME,
     processing_channel_id: input.processingChannelId,
     billing: { address: { country: input.country } },
     enabled_payment_methods: input.paymentMethods,
