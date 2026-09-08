@@ -45,13 +45,6 @@ export const PRODUCTS: Product[] = [
     color: "#5D6B3F",
     prices: { HKD: 24900, EUR: 2995, USD: 3199 },
   },
-  {
-    id: "tri-sticker",
-    name: "Tri Sticker",
-    description: "A one-cent sample, handy for trying a wallet.",
-    color: "#C9D2B0",
-    prices: { HKD: 1, EUR: 1, USD: 1 },
-  },
 ];
 
 export function findProduct(id: string): Product | undefined {
