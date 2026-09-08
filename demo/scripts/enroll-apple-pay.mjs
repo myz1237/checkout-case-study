@@ -2,8 +2,8 @@
 /**
  * Registers a domain for Apple Pay on the Checkout.com account behind CKO_SECRET_KEY.
  *
- *   npm run enroll-apple-pay -- your-app.vercel.app            # default credentials
- *   npm run enroll-apple-pay -- your-app.vercel.app --market NL  # a market's own credentials
+ *   pnpm enroll-apple-pay your-app.vercel.app            # default credentials
+ *   pnpm enroll-apple-pay your-app.vercel.app --market NL  # a market's own credentials
  *
  * Flow renders the Apple Pay button only on an enrolled, publicly reachable HTTPS
  * domain. Run this once per domain (sandbox and production are separate accounts).
@@ -17,7 +17,7 @@ const environment = process.env.NEXT_PUBLIC_CKO_ENVIRONMENT === "production" ? "
 const baseUrl = environment === "production" ? "https://api.checkout.com" : "https://api.sandbox.checkout.com";
 
 if (!domain || domain.includes("/") || domain.startsWith("http")) {
-  console.error("Usage: npm run enroll-apple-pay -- <domain>   e.g. tri-case.vercel.app (no scheme, no path)");
+  console.error("Usage: pnpm enroll-apple-pay <domain>   e.g. tri-case.vercel.app (no scheme, no path)");
   process.exit(2);
 }
 if (!secretKey) {

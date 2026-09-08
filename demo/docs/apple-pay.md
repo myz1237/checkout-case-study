@@ -4,7 +4,7 @@ Apple Pay is enabled on the payment session for both markets (see `lib/markets.t
 Flow renders the Apple Pay button automatically when all of the following hold:
 
 1. The page is served over HTTPS on a public domain (Apple validates the domain; `localhost` cannot be enrolled).
-2. That domain is enrolled on the Checkout.com account: `npm run enroll-apple-pay -- <domain>`.
+2. That domain is enrolled on the Checkout.com account: `pnpm enroll-apple-pay <domain>`.
    The secret key used needs the `vault:apme-enrollment` scope.
 3. The customer uses Safari on a device with Apple Pay set up. Flow calls `isAvailable()` itself.
 

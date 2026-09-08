@@ -14,7 +14,7 @@ not cover the Netherlands.
 
 Build the integration as if enrollment were in place (Apple Pay enabled on every session,
 `display_name` and `items` set so the payment sheet is correct) and ship a one-off script,
-`npm run enroll-apple-pay -- <domain>`, that performs the enrollment and explains the scope
+`pnpm enroll-apple-pay <domain>`, that performs the enrollment and explains the scope
 problem when it hits `401`. Verify Apple Pay on the Vercel production domain with a sandbox
 account we own, for the Hong Kong market.
 

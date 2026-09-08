@@ -30,8 +30,8 @@ the merchant ever touching card data.
 ```bash
 cd demo
 cp .env.example .env.local   # fill in your sandbox keys
-npm install
-npm run dev                  # http://localhost:3000
+pnpm install
+pnpm dev                  # http://localhost:3000
 ```
 
 Environment variables:
@@ -45,7 +45,7 @@ Environment variables:
 | `SITE_URL` | server only, optional | Public origin for the redirect URLs when running `next start` behind a proxy; not needed on Vercel or locally |
 | `CKO_NL_SECRET_KEY`, `CKO_NL_PROCESSING_CHANNEL_ID`, `CKO_NL_PUBLIC_KEY` | server only, optional | Process the NL market through a different account / processing channel. Set all three or none; HK (and any market without an override) keeps the defaults |
 
-Checks: `npm test` (unit tests for cart, pricing, session request, markets, locales, input guards, origin resolution), `npm run lint`, `npm run build`.
+Checks: `pnpm test` (unit tests for cart, pricing, session request, markets, locales, input guards, origin resolution), `pnpm lint`, `pnpm build`.
 
 ## Test it
 
@@ -68,7 +68,7 @@ Switch market with the segmented control (prices, currency and payment methods c
 2. Add the four environment variables above.
 3. After the first production deploy, enrol the production domain for Apple Pay:
    ```bash
-   npm run enroll-apple-pay -- <your-project>.vercel.app
+   pnpm enroll-apple-pay <your-project>.vercel.app
    ```
    This uses the default credentials (the HK market). Add `--market NL` to enrol with a market's own credentials.
    Preview deployments get a different URL per commit, so only enrol the stable production domain.
