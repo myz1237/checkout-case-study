@@ -12,6 +12,8 @@ import type { Translate } from "@/lib/i18n";
 
 type Props = {
   paymentSession: Record<string, unknown>;
+  /** Public key of the account that created the session. */
+  publicKey: string;
   /** Pre-fills Flow's cardholder name field (shown at the top of the card form). */
   cardholderName?: string;
   /** Flow display language; changing it re-initialises Flow on the same session. */
@@ -32,6 +34,7 @@ type Props = {
  */
 export default function FlowCheckout({
   paymentSession,
+  publicKey,
   cardholderName,
   locale,
   t,
@@ -56,7 +59,7 @@ export default function FlowCheckout({
     (async () => {
       try {
         const checkout = await loadCheckoutWebComponents({
-          publicKey: process.env.NEXT_PUBLIC_CKO_PUBLIC_KEY ?? "",
+          publicKey,
           environment:
             process.env.NEXT_PUBLIC_CKO_ENVIRONMENT === "production"
               ? "production"
@@ -97,7 +100,7 @@ export default function FlowCheckout({
       cancelled = true;
       component?.unmount();
     };
-  }, [paymentSession, cardholderName, locale]);
+  }, [paymentSession, publicKey, cardholderName, locale]);
 
   return (
     <div className="flow-wrapper">

@@ -27,14 +27,24 @@ export function isCustomer(value: unknown): value is Customer {
   return typeof name === "string" && typeof email === "string";
 }
 
-export type CheckoutState = { locked: boolean; session: (Record<string, unknown> & { id: string }) | null };
+export type CheckoutState = {
+  locked: boolean;
+  session: (Record<string, unknown> & { id: string }) | null;
+  /** Public key of the account that created `session`; Flow must be initialised with it. */
+  publicKey: string | null;
+};
 
 export function isCheckoutState(value: unknown): value is CheckoutState {
   if (typeof value !== "object" || value === null) return false;
-  const { locked, session } = value as Record<string, unknown>;
+  const { locked, session, publicKey } = value as Record<string, unknown>;
   if (typeof locked !== "boolean") return false;
-  if (session === null) return true;
-  return typeof session === "object" && session !== null && typeof (session as Record<string, unknown>).id === "string";
+  if (session === null) return publicKey === null;
+  return (
+    typeof session === "object" &&
+    session !== null &&
+    typeof (session as Record<string, unknown>).id === "string" &&
+    typeof publicKey === "string"
+  );
 }
 
 export const isMarket = (value: unknown): value is MarketId => isMarketId(value);

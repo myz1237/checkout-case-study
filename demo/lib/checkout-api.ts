@@ -1,22 +1,11 @@
 import "server-only";
+import type { Credentials } from "./credentials";
 import type { PaymentSessionRequest } from "./payment-session";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_CKO_ENVIRONMENT === "production"
     ? "https://api.checkout.com"
     : "https://api.sandbox.checkout.com";
-
-function secretKey(): string {
-  const key = process.env.CKO_SECRET_KEY;
-  if (!key) throw new Error("CKO_SECRET_KEY is not set");
-  return key;
-}
-
-export function processingChannelId(): string {
-  const id = process.env.CKO_PROCESSING_CHANNEL_ID;
-  if (!id) throw new Error("CKO_PROCESSING_CHANNEL_ID is not set");
-  return id;
-}
 
 export class CheckoutApiError extends Error {
   constructor(
@@ -27,11 +16,11 @@ export class CheckoutApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit): Promise<T> {
+async function request<T>(creds: Credentials, path: string, init: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     headers: {
-      Authorization: `Bearer ${secretKey()}`,
+      Authorization: `Bearer ${creds.secretKey}`,
       "Content-Type": "application/json",
       ...init.headers,
     },
@@ -51,9 +40,10 @@ export type PaymentSessionResponse = {
 };
 
 export function createPaymentSession(
+  creds: Credentials,
   body: PaymentSessionRequest,
 ): Promise<PaymentSessionResponse> {
-  return request<PaymentSessionResponse>("/payment-sessions", {
+  return request<PaymentSessionResponse>(creds, "/payment-sessions", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -77,13 +67,14 @@ type PaymentAction = { type: string; response_summary?: string; processed_on?: s
 /**
  * Get Payment Details plus, for unsuccessful payments, the decline reason from
  * the latest action (the details endpoint itself carries no response_summary).
+ * Returns null when this account does not know the payment.
  */
-export async function getPayment(id: string): Promise<PaymentDetails | null> {
+export async function getPayment(creds: Credentials, id: string): Promise<PaymentDetails | null> {
   const path = `/payments/${encodeURIComponent(id)}`;
   try {
-    const payment = await request<PaymentDetails>(path, { method: "GET" });
+    const payment = await request<PaymentDetails>(creds, path, { method: "GET" });
     if (!payment.approved && !payment.response_summary) {
-      const actions = await request<PaymentAction[] | null>(`${path}/actions`, { method: "GET" }).catch(() => null);
+      const actions = await request<PaymentAction[] | null>(creds, `${path}/actions`, { method: "GET" }).catch(() => null);
       payment.response_summary = actions?.[0]?.response_summary;
     }
     return payment;

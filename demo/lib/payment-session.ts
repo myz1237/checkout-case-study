@@ -5,9 +5,11 @@
 import type { Currency } from "./catalog";
 import { cartTotal, type PricedLine } from "./cart";
 import type { Customer } from "./customer";
-import type { PaymentMethod } from "./markets";
+import type { MarketId, PaymentMethod } from "./markets";
 
 export type PaymentSessionInput = {
+  /** Carried on the redirect URLs so the outcome pages know which credentials to use. */
+  market: MarketId;
   lines: PricedLine[];
   currency: Currency;
   reference: string;
@@ -73,7 +75,8 @@ export function buildPaymentSessionRequest(
       unit_price: l.unitPrice,
       total_amount: l.lineTotal,
     })),
-    success_url: `${origin}/success`,
-    failure_url: `${origin}/failure`,
+    // Checkout.com appends its own cko-* parameters to these with `&`.
+    success_url: `${origin}/success?market=${input.market}`,
+    failure_url: `${origin}/failure?market=${input.market}`,
   };
 }

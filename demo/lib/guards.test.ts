@@ -15,8 +15,9 @@ describe("guards", () => {
     expect(isCustomer("x")).toBe(false);
     expect(isCustomer({ name: "a", email: "b" })).toBe(true);
     expect(isCheckoutState(null)).toBe(false);
-    expect(isCheckoutState({ locked: true, session: {} })).toBe(false);
-    expect(isCheckoutState({ locked: true, session: { id: "ps_1" } })).toBe(true);
-    expect(isCheckoutState({ locked: false, session: null })).toBe(true);
+    expect(isCheckoutState({ locked: true, session: {}, publicKey: "pk" })).toBe(false);
+    expect(isCheckoutState({ locked: true, session: { id: "ps_1" } })).toBe(false);
+    expect(isCheckoutState({ locked: true, session: { id: "ps_1" }, publicKey: "pk" })).toBe(true);
+    expect(isCheckoutState({ locked: false, session: null, publicKey: null })).toBe(true);
   });
 });

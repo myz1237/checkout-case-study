@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import CheckoutStorage from "@/components/CheckoutStorage";
 import { BackLink, OutcomeNotice } from "@/components/PaymentOutcome";
 import { intlLocale } from "@/lib/locales";
-import { loadOutcome } from "@/lib/outcome";
+import { loadOutcome, outcomeQuery } from "@/lib/outcome";
 import { serverLocale } from "@/lib/server-locale";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -14,9 +14,9 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
  */
 export default async function FailurePage({ searchParams }: Props) {
   const [params, { locale, t }] = await Promise.all([searchParams, serverLocale()]);
-  const outcome = await loadOutcome(params["cko-payment-id"]);
+  const outcome = await loadOutcome(params["cko-payment-id"], params.market);
   if (outcome.kind === "success" || outcome.kind === "pending") {
-    redirect(`/success?cko-payment-id=${outcome.paymentId}`);
+    redirect(`/success?${outcomeQuery(outcome.paymentId, outcome.market)}`);
   }
 
   return (

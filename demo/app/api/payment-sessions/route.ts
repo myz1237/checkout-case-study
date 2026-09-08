@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { priceCart } from "@/lib/cart";
-import {
-  CheckoutApiError,
-  createPaymentSession,
-  processingChannelId,
-} from "@/lib/checkout-api";
+import { CheckoutApiError, createPaymentSession } from "@/lib/checkout-api";
+import { credentialsFor } from "@/lib/credentials";
 import { isCustomerValid, normalizeCustomer, type Customer } from "@/lib/customer";
 import { isCartLines } from "@/lib/guards";
 import { getMarket } from "@/lib/markets";
@@ -38,7 +35,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "customer_invalid" }, { status: 400 });
     }
     const origin = siteOrigin(req);
+    const creds = credentialsFor(market.id);
     const request = buildPaymentSessionRequest({
+      market: market.id,
       lines,
       currency: market.currency,
       country: market.country,
@@ -46,10 +45,11 @@ export async function POST(req: Request) {
       customer,
       reference: `ORD-${Date.now()}`,
       origin,
-      processingChannelId: processingChannelId(),
+      processingChannelId: creds.processingChannelId,
     });
-    const session = await createPaymentSession(request);
-    return NextResponse.json(session);
+    const session = await createPaymentSession(creds, request);
+    // The public key must belong to the account that created the session.
+    return NextResponse.json({ session, publicKey: creds.publicKey });
   } catch (err) {
     if (err instanceof CheckoutApiError) {
       console.error("payment session failed", err.status, err.body);

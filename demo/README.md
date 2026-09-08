@@ -11,15 +11,15 @@ the merchant ever touching card data.
 | Capture card details securely, stay PCI compliant | **Checkout.com Flow** embedded on the page | Card fields are rendered in Checkout.com iframes, the merchant qualifies for SAQ A, and the checkout stays on our page (no redirect to a hosted page). [ADR 0001](docs/adr/0001-flow-over-hosted-pages.md) |
 | Mostly iPhone visitors, faster checkout | **Apple Pay via Flow** | Flow renders the Apple Pay button on Safari once the domain is enrolled; no separate wallet integration. [docs/apple-pay.md](docs/apple-pay.md) |
 | Works on mobile | One responsive web page | Flow is a responsive web component; the native Mobile SDKs are for apps, not websites |
-| Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language | HK: card + Apple Pay in HKD. NL: card + Apple Pay + iDEAL in EUR. Explicit `enabled_payment_methods` so nothing else on the account leaks in. [ADR 0002](docs/adr/0002-market-payment-matrix.md) |
+| Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language, **credentials** | HK: card + Apple Pay in HKD. NL: card + Apple Pay + iDEAL in EUR. Explicit `enabled_payment_methods` so nothing else on the account leaks in. Each market can process through its own account / processing channel. [ADR 0002](docs/adr/0002-market-payment-matrix.md) |
 | No database | Hard-coded catalogue, cart in `localStorage` | Prices are always recomputed on the server from the catalogue; the browser only sends product ids and quantities |
 
 ## How a payment flows
 
 1. The shopper picks a market, adds cases, enters name and email, and presses **Checkout**. The cart locks.
 2. The browser posts product ids, quantities, market and customer to `POST /api/payment-sessions`.
-3. The server prices the cart, builds the [Payment Session](https://www.checkout.com/docs/payments/accept-payments/accept-a-payment-on-your-website/get-started-with-flow) request (amount, currency, billing country, enabled payment methods, customer, `3ds.enabled`, line items, `display_name`, success/failure URLs) and calls Checkout.com with the secret key.
-4. The page mounts Flow with the session, the public key, the selected locale, the brand palette, and the cardholder name pre-filled from the form.
+3. The server picks the market's credentials, prices the cart, builds the [Payment Session](https://www.checkout.com/docs/payments/accept-payments/accept-a-payment-on-your-website/get-started-with-flow) request (amount, currency, billing country, enabled payment methods, customer, `3ds.enabled`, line items, `display_name`, success/failure URLs) and calls Checkout.com with the secret key.
+4. The page mounts Flow with the session, the public key of the account that created it, the selected locale, the brand palette, and the cardholder name pre-filled from the form.
 5. Outcome:
    - synchronous (no 3DS challenge, Apple Pay): Flow raises `onPaymentCompleted` and we navigate to `/success?cko-payment-id=…`
    - redirect (3DS challenge, iDEAL): Checkout.com sends the shopper to the `success_url` / `failure_url` we passed, with `cko-payment-id` appended
@@ -43,6 +43,7 @@ Environment variables:
 | `NEXT_PUBLIC_CKO_PUBLIC_KEY` | browser | Public key with `payment-sessions:pay` and `vault-tokenization` |
 | `NEXT_PUBLIC_CKO_ENVIRONMENT` | both | `sandbox` or `production` |
 | `SITE_URL` | server only, optional | Public origin for the redirect URLs when running `next start` behind a proxy; not needed on Vercel or locally |
+| `CKO_NL_SECRET_KEY`, `CKO_NL_PROCESSING_CHANNEL_ID`, `CKO_NL_PUBLIC_KEY` | server only, optional | Process the NL market through a different account / processing channel. Set all three or none; HK (and any market without an override) keeps the defaults |
 
 Checks: `npm test` (unit tests for cart, pricing, session request, markets, locales, input guards, origin resolution), `npm run lint`, `npm run build`.
 
@@ -69,13 +70,14 @@ Switch market with the segmented control (prices, currency and payment methods c
    ```bash
    npm run enroll-apple-pay -- <your-project>.vercel.app
    ```
+   This uses the default credentials (the HK market). Add `--market NL` to enrol with a market's own credentials.
    Preview deployments get a different URL per commit, so only enrol the stable production domain.
 4. Success/failure URLs are derived from the request origin, so nothing else changes between local and hosted.
 
 ## Known limitations
 
 - **Apple Pay enrollment** needs a secret key with the `vault:apme-enrollment` scope. The shared case-study key returns `401` from the enrollment endpoint; use a sandbox account you own. Sandbox testing needs an App Store Connect sandbox tester and Apple's sandbox covers Hong Kong but not the Netherlands. See [docs/apple-pay.md](docs/apple-pay.md) and [ADR 0003](docs/adr/0003-apple-pay-enrollment.md).
-- **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code already sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. The shared case-study sandbox has iDEAL but cannot enrol Apple Pay, and vice versa for a fresh sandbox account, so the two wallets are demonstrated with different keys.
+- **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. In this demo the NL market is processed through the shared case-study sandbox (which has iDEAL) via the `CKO_NL_*` override, while HK uses a sandbox account that can enrol Apple Pay.
 - Flow's Hong Kong locale must be passed as `zh-HK`; the lowercase `zh-hk` shown in the localization docs is ignored.
 - Not built (Part 3 optional items left out on purpose): webhooks and refunds. Both need a public URL and would sit naturally on the Vercel deployment.
 

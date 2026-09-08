@@ -2,13 +2,17 @@
 /**
  * Registers a domain for Apple Pay on the Checkout.com account behind CKO_SECRET_KEY.
  *
- *   npm run enroll-apple-pay -- your-app.vercel.app
+ *   npm run enroll-apple-pay -- your-app.vercel.app            # default credentials
+ *   npm run enroll-apple-pay -- your-app.vercel.app --market NL  # a market's own credentials
  *
  * Flow renders the Apple Pay button only on an enrolled, publicly reachable HTTPS
  * domain. Run this once per domain (sandbox and production are separate accounts).
  */
-const domain = process.argv[2]?.trim();
-const secretKey = process.env.CKO_SECRET_KEY;
+const args = process.argv.slice(2);
+const marketIdx = args.indexOf("--market");
+const market = marketIdx >= 0 ? args[marketIdx + 1]?.toUpperCase() : null;
+const domain = args.filter((a, i) => i !== marketIdx && i !== marketIdx + 1)[0]?.trim();
+const secretKey = market ? process.env[`CKO_${market}_SECRET_KEY`] : process.env.CKO_SECRET_KEY;
 const environment = process.env.NEXT_PUBLIC_CKO_ENVIRONMENT === "production" ? "production" : "sandbox";
 const baseUrl = environment === "production" ? "https://api.checkout.com" : "https://api.sandbox.checkout.com";
 
@@ -17,7 +21,7 @@ if (!domain || domain.includes("/") || domain.startsWith("http")) {
   process.exit(2);
 }
 if (!secretKey) {
-  console.error("CKO_SECRET_KEY is not set. Put it in .env.local or export it before running.");
+  console.error(`${market ? `CKO_${market}_SECRET_KEY` : "CKO_SECRET_KEY"} is not set. Put it in .env.local or export it before running.`);
   process.exit(2);
 }
 
@@ -29,7 +33,7 @@ const res = await fetch(`${baseUrl}/applepay/enrollments`, {
 const body = await res.text();
 
 if (res.ok) {
-  console.log(`Enrolled ${domain} for Apple Pay (${environment}).`);
+  console.log(`Enrolled ${domain} for Apple Pay (${environment}${market ? `, ${market} credentials` : ""}).`);
   if (body) console.log(body);
   console.log("Open the site in Safari on an Apple Pay capable device: Flow now shows the Apple Pay button.");
   process.exit(0);

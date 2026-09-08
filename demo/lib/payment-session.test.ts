@@ -7,6 +7,7 @@ const lines = [
 ];
 
 const base = {
+  market: "HK" as const,
   lines,
   currency: "HKD" as const,
   reference: "ORD-1",
@@ -33,15 +34,15 @@ describe("buildPaymentSessionRequest", () => {
         { reference: "moss-silicone", name: "Moss Silicone Case", quantity: 2, unit_price: 19900, total_amount: 39800 },
         { reference: "tri-grip", name: "Tri Grip Case", quantity: 1, unit_price: 24900, total_amount: 24900 },
       ],
-      success_url: "http://localhost:3000/success",
-      failure_url: "http://localhost:3000/failure",
+      success_url: "http://localhost:3000/success?market=HK",
+      failure_url: "http://localhost:3000/failure?market=HK",
     });
   });
 
   it("derives redirect URLs from the origin without a double slash", () => {
     const req = buildPaymentSessionRequest({ ...base, origin: "https://shop.example/" });
-    expect(req.success_url).toBe("https://shop.example/success");
-    expect(req.failure_url).toBe("https://shop.example/failure");
+    expect(req.success_url).toBe("https://shop.example/success?market=HK");
+    expect(req.failure_url).toBe("https://shop.example/failure?market=HK");
   });
 
   it("rejects an empty cart", () => {

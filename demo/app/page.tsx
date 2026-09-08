@@ -16,7 +16,7 @@ import { LOCALE_COOKIE, translator, type MessageKey } from "@/lib/i18n";
 import { intlLocale, resolveLocale, type LocaleId } from "@/lib/locales";
 import { DEFAULT_MARKET, MARKETS, type MarketId } from "@/lib/markets";
 
-const NO_CHECKOUT: CheckoutState = { locked: false, session: null };
+const NO_CHECKOUT: CheckoutState = { locked: false, session: null, publicKey: null };
 const EMPTY_LINES: CartLine[] = [];
 
 export default function Home() {
@@ -61,9 +61,9 @@ export default function Home() {
         body: JSON.stringify({ lines, market: market.id, customer: normalizeCustomer(customer) }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      const session = await res.json();
+      const { session, publicKey } = await res.json();
       // Ignore a response that belongs to an earlier attempt (e.g. the market changed meanwhile).
-      if (id === requestId.current) setCheckout({ locked: true, session });
+      if (id === requestId.current) setCheckout({ locked: true, session, publicKey });
     } catch (err) {
       if (id === requestId.current) {
         setError({ key: "session_error", vars: { status: err instanceof Error ? err.message : "network" } });
@@ -139,10 +139,13 @@ export default function Home() {
             <FlowCheckout
               key={`${checkout.session!.id}:${localeId}`}
               paymentSession={checkout.session!}
+              publicKey={checkout.publicKey!}
               cardholderName={normalizeCustomer(customer).name}
               locale={localeId}
               t={t}
-              onPaymentCompleted={(p) => router.push(`/success?cko-payment-id=${encodeURIComponent(p.id)}`)}
+              onPaymentCompleted={(p) =>
+                router.push(`/success?cko-payment-id=${encodeURIComponent(p.id)}&market=${market.id}`)
+              }
               onError={() => setError({ key: "payment_error" })}
             />
           </>
