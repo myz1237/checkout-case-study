@@ -32,7 +32,7 @@ export const MARKETS: Record<MarketId, Market> = {
     currency: "EUR",
     defaultLocale: "nl",
     locales: ["nl", "en"],
-    paymentMethods: ["card", "applepay", "ideal"],
+    paymentMethods: ["card", "ideal"],
   },
 };
 

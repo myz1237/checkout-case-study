@@ -12,7 +12,7 @@ not cover the Netherlands.
 
 ## Decision
 
-Build the integration as if enrollment were in place (Apple Pay enabled on every session,
+Build the integration as if enrollment were in place (Apple Pay enabled on every HK session,
 `display_name` and `items` set so the payment sheet is correct) and ship a one-off script,
 `pnpm enroll-apple-pay <domain>`, that performs the enrollment and explains the scope
 problem when it hits `401`. Verify Apple Pay on the Vercel production domain with a sandbox
@@ -22,4 +22,4 @@ account we own, for the Hong Kong market.
 
 - No code change is needed when the domain is enrolled; the button appears on Safari.
 - Local development never shows Apple Pay; cards and iDEAL are verified locally, Apple Pay on the deployed domain.
-- The Netherlands market carries Apple Pay but cannot be exercised with Apple test cards.
+- The Netherlands market does not offer Apple Pay: its account cannot enrol the domain, so the button would open a sheet that Checkout.com then rejects (verified: 422 from the Apple Pay session endpoint).

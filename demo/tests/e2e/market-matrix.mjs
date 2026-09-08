@@ -41,7 +41,7 @@ await page.waitForTimeout(1500);
 const nl = sessions.at(-1);
 const nlTypes = nl.payment_methods.map((m) => m.type);
 console.log("NL session methods:", nlTypes, "currency:", nl.currency, "locale:", nl.locale);
-check("NL session has card + applepay", nlTypes.includes("card") && nlTypes.includes("applepay"));
+check("NL session has card and no applepay", nlTypes.includes("card") && !nlTypes.includes("applepay"));
 check("NL session has ideal (NL credentials point at the account with iDEAL)", nlTypes.includes("ideal"));
 check("NL session has no googlepay/sofort", !nlTypes.includes("googlepay") && !nlTypes.includes("sofort"));
 const nlUi = await flowMethods();

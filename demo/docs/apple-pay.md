@@ -1,6 +1,6 @@
 # Apple Pay: what is done and what is still needed
 
-Apple Pay is enabled on the payment session for both markets (see `lib/markets.ts`).
+Apple Pay is enabled on the payment session for the Hong Kong market (see `lib/markets.ts`).
 Flow renders the Apple Pay button automatically when all of the following hold:
 
 1. The page is served over HTTPS on a public domain (Apple validates the domain; `localhost` cannot be enrolled).
@@ -25,4 +25,11 @@ No application code changes are needed once the domain is enrolled.
 
 - `display_name: "Tri Case"` so the payment sheet shows the store name, not the account's legal name.
 - `items` with the cart lines, so the sheet can list what is being bought.
-- `billing.address.country` and `currency` matching the market (HK/HKD, NL/EUR).
+- `billing.address.country` and `currency` matching the market.
+
+## Why the button can show but the payment still fails
+
+Flow decides whether to show the button from the device alone (Safari with a card in Wallet).
+The domain is checked only when the shopper taps it: Checkout.com creates the Apple Pay session
+and rejects it (HTTP 422, surfaced by Flow as `payment_method_attempt_failed`) if the account
+has not enrolled the domain. Enrol first, then test with a sandbox tester account, never a real card.

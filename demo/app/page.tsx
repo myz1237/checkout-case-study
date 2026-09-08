@@ -140,7 +140,7 @@ export default function Home() {
               onPaymentCompleted={(p) =>
                 router.push(`/success?cko-payment-id=${encodeURIComponent(p.id)}&market=${market.id}`)
               }
-              onError={() => setError({ key: "payment_error" })}
+              onError={(e) => setError({ key: "payment_error", vars: { code: e.code } })}
             />
           </>
         )}

@@ -4,7 +4,7 @@ import { getMarket, MARKETS } from "@/lib/markets";
 describe("markets", () => {
   it("defines the payment method matrix from the requirements", () => {
     expect(MARKETS.HK.paymentMethods).toEqual(["card", "applepay"]);
-    expect(MARKETS.NL.paymentMethods).toEqual(["card", "applepay", "ideal"]);
+    expect(MARKETS.NL.paymentMethods).toEqual(["card", "ideal"]);
     expect(MARKETS.HK.currency).toBe("HKD");
     expect(MARKETS.NL.currency).toBe("EUR");
   });
