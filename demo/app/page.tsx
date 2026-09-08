@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import CartSummary from "@/components/CartSummary";
+import Logo from "@/components/Logo";
 import CurrencySelect from "@/components/CurrencySelect";
 import CustomerForm from "@/components/CustomerForm";
 import FlowCheckout from "@/components/FlowCheckout";
@@ -105,6 +106,7 @@ export default function Home() {
   return (
     <main className="page">
       <header className="masthead">
+        <Logo />
         <h1>Tri Case</h1>
         <p className="muted">{t("tagline")}</p>
         <div className="controls">

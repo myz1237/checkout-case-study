@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import CheckoutStorage from "@/components/CheckoutStorage";
+import Logo from "@/components/Logo";
 import { BackLink, OutcomeNotice } from "@/components/PaymentOutcome";
 import { intlLocale } from "@/lib/locales";
 import { loadOutcome, outcomeQuery } from "@/lib/outcome";
@@ -26,6 +27,7 @@ export default async function SuccessPage({ searchParams }: Props) {
   return (
     <main className="page">
       <header className="masthead">
+        <Logo />
         <h1>Tri Case</h1>
       </header>
       <section className="panel">

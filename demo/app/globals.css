@@ -123,3 +123,5 @@ a.btn { display: inline-block; text-decoration: none; }
   padding: 8px 10px; font-size: 0.9rem; border: 1px solid var(--ink); border-radius: 8px; background: #fff; color: var(--ink);
 }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.logo { display: block; border-radius: 6px; flex: 0 0 auto; }
