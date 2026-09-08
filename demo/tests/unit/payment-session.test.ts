@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPaymentSessionRequest } from "./payment-session";
+import { buildPaymentSessionRequest } from "@/lib/payment-session";
 
 const lines = [
   { productId: "moss-silicone", name: "Moss Silicone Case", quantity: 2, unitPrice: 19900, lineTotal: 39800 },

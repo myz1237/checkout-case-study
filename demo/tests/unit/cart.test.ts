@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addToCart, cartTotal, formatMoney, priceCart, setQuantity } from "./cart";
+import { addToCart, cartTotal, formatMoney, priceCart, setQuantity } from "@/lib/cart";
 
 describe("cart", () => {
   it("adds a new line and increments an existing one", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isCustomerValid, normalizeCustomer, validateCustomer } from "./customer";
+import { isCustomerValid, normalizeCustomer, validateCustomer } from "@/lib/customer";
 
 describe("customer", () => {
   it("requires a name of at least two characters and a plausible email", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMarket, MARKETS } from "./markets";
+import { getMarket, MARKETS } from "@/lib/markets";
 
 describe("markets", () => {
   it("defines the payment method matrix from the requirements", () => {

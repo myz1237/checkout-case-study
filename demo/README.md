@@ -45,7 +45,17 @@ Environment variables:
 | `SITE_URL` | server only, optional | Public origin for the redirect URLs when running `next start` behind a proxy; not needed on Vercel or locally |
 | `CKO_NL_SECRET_KEY`, `CKO_NL_PROCESSING_CHANNEL_ID`, `CKO_NL_PUBLIC_KEY` | server only, optional | Process the NL market through a different account / processing channel. Set all three or none; HK (and any market without an override) keeps the defaults |
 
-Checks: `pnpm test` (unit tests for cart, pricing, session request, markets, locales, input guards, origin resolution), `pnpm lint`, `pnpm build`.
+## Tests
+
+Everything lives under `tests/`:
+
+| Command | What runs |
+|---|---|
+| `pnpm test` | Unit tests in `tests/unit/` (Vitest): cart maths, pricing, session request builder, markets, locales, page copy, input guards, credentials, origin resolution |
+| `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, iDEAL via the test bank, market and language switching, outcome pages |
+| `pnpm lint`, `pnpm build` | ESLint and a production build |
+
+Before the first e2e run: `pnpm exec playwright install chromium`. Run a single scenario with `pnpm test:e2e customer-3ds`; screenshots land in `tests/e2e/screenshots/`.
 
 ## Test it
 
@@ -86,8 +96,10 @@ Switch market with the segmented control (prices, currency and payment methods c
 ```
 app/                Next.js App Router: storefront page, /success, /failure, /api/payment-sessions
 components/         ProductGrid, CartSummary, CustomerForm, MarketSwitch, LanguageSelect, FlowCheckout, PaymentOutcome
-lib/                catalogue, cart maths, markets, locales, page copy (i18n), session request builder, Checkout.com API client (+ unit tests)
-hooks/              usePersistentState (localStorage / sessionStorage via useSyncExternalStore)
+lib/                catalogue, cart maths, markets, locales, page copy (i18n), credentials, session request builder, Checkout.com API client
+hooks/              usePersistentState (Web Storage via useSyncExternalStore)
+tests/unit/         Vitest unit tests
+tests/e2e/          Playwright scenarios + run-all runner
 scripts/            enroll-apple-pay.mjs
 docs/               apple-pay.md, adr/
 ```

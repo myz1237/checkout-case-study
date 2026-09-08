@@ -18,7 +18,7 @@ describe("credentials", () => {
   afterEach(() => vi.resetModules());
 
   it("uses the default set when a market has no override", async () => {
-    const { credentialsFor, allCredentials } = await import("./credentials");
+    const { credentialsFor, allCredentials } = await import("@/lib/credentials");
     expect(credentialsFor("NL").secretKey).toBe("sk_default");
     expect(credentialsFor("HK").market).toBe("default");
     expect(allCredentials(["HK", "NL"])).toHaveLength(1);
@@ -28,7 +28,7 @@ describe("credentials", () => {
     process.env.CKO_NL_SECRET_KEY = "sk_nl";
     process.env.CKO_NL_PROCESSING_CHANNEL_ID = "pc_nl";
     process.env.CKO_NL_PUBLIC_KEY = "pk_nl";
-    const { credentialsFor, allCredentials } = await import("./credentials");
+    const { credentialsFor, allCredentials } = await import("@/lib/credentials");
     expect(credentialsFor("NL")).toEqual({ market: "NL", secretKey: "sk_nl", processingChannelId: "pc_nl", publicKey: "pk_nl" });
     expect(credentialsFor("HK").secretKey).toBe("sk_default");
     expect(allCredentials(["HK", "NL"]).map((c) => c.market)).toEqual(["default", "NL"]);
@@ -36,7 +36,7 @@ describe("credentials", () => {
 
   it("refuses a partial override", async () => {
     process.env.CKO_NL_SECRET_KEY = "sk_nl";
-    const { credentialsFor } = await import("./credentials");
+    const { credentialsFor } = await import("@/lib/credentials");
     expect(() => credentialsFor("NL")).toThrow(/Incomplete/);
   });
 });

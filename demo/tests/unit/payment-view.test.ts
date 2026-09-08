@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPending, isSuccessful, parsePaymentId, paymentMethodLabel } from "./payment-view";
+import { isPending, isSuccessful, parsePaymentId, paymentMethodLabel } from "@/lib/payment-view";
 
 const base = { id: "pay_x", status: "Captured", approved: true, amount: 100, currency: "HKD" };
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { MESSAGE_KEYS, translator } from "./i18n";
-import { LOCALES } from "./locales";
+import { MESSAGE_KEYS, translator } from "@/lib/i18n";
+import { LOCALES } from "@/lib/locales";
 
 describe("i18n", () => {
   it("has every key in every locale", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isCartLines, isCheckoutState, isCustomer } from "./guards";
+import { isCartLines, isCheckoutState, isCustomer } from "@/lib/guards";
 
 describe("guards", () => {
   it("accepts only integer quantities within range", () => {

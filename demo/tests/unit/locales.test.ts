@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney } from "./cart";
-import { intlLocale, resolveLocale } from "./locales";
-import { MARKETS } from "./markets";
+import { formatMoney } from "@/lib/cart";
+import { intlLocale, resolveLocale } from "@/lib/locales";
+import { MARKETS } from "@/lib/markets";
 
 describe("locales", () => {
   it("keeps a stored locale only if the market offers it", () => {

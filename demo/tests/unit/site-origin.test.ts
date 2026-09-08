@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { siteOrigin } from "./site-origin";
+import { siteOrigin } from "@/lib/site-origin";
 
 const req = (url: string, headers: Record<string, string> = {}) => new Request(url, { headers });
 
