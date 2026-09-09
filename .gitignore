@@ -12,3 +12,6 @@
 .agents/
 .claude/
 skills-lock.json
+
+# presentation material (screenshots, outline); remove this line to commit it
+presentation/
