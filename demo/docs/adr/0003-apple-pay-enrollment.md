@@ -1,6 +1,6 @@
 # ADR 0003: Apple Pay enrollment blocker
 
-**Status:** accepted · 2026-09-08
+**Status:** accepted · 2026-09-08 · verified 2026-09-09 (HK, sandbox tester, Apple test card)
 
 ## Context
 

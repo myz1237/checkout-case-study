@@ -75,7 +75,7 @@ Any future expiry and any 3-digit CVV. Full list: [Checkout.com test cards](http
 | 3DS failed | `4243754271700719` | Failure page with "Cardholder failed 3D-Secure authentication", cart kept |
 | Declined (insufficient funds) | `4544249167673670` | Flow shows the decline inline; try another card |
 | iDEAL (NL market) | bank **TESTNL2A**, then **SUCCESS** (or FAILURE) on the simulator | Redirect to the iDEAL test page, then back to the success (or failure) page |
-| Apple Pay | Safari on an Apple Pay device, enrolled domain | Apple Pay button above the card form |
+| Apple Pay | Safari on an iPhone signed in with an App Store Connect sandbox tester, Apple test card in Wallet, HK market | Apple Pay button above the card form; Face ID, then the success page |
 
 Switch market with the segmented control (prices, currency and payment methods change), currency with the first dropdown (each market has its own price list per currency; iDEAL disappears outside EUR; mid-checkout the session is recreated in place) and language with the second: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
 
@@ -99,7 +99,7 @@ To register it: Dashboard → Developers → Webhooks → New webhook → URL `h
 
 ## Known limitations
 
-- **Apple Pay enrollment** needs a secret key with the `vault:apme-enrollment` scope. The shared case-study key returns `401` from the enrollment endpoint; use a sandbox account you own. Sandbox testing needs an App Store Connect sandbox tester and Apple's sandbox covers Hong Kong but not the Netherlands. See [docs/apple-pay.md](docs/apple-pay.md) and [ADR 0003](docs/adr/0003-apple-pay-enrollment.md).
+- **Apple Pay** is verified end to end for the HK market on the Vercel deployment (domain enrolled, sandbox tester account, Apple test card, payment captured). Enrollment needs a secret key with the `vault:apme-enrollment` scope, which the shared case-study key lacks, and Apple's sandbox covers Hong Kong but not the Netherlands. See [docs/apple-pay.md](docs/apple-pay.md) and [ADR 0003](docs/adr/0003-apple-pay-enrollment.md).
 - **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. In this demo the NL market is processed through the shared case-study sandbox (which has iDEAL) via the `CKO_NL_*` override, while HK uses a sandbox account that can enrol Apple Pay.
 - **Apple Pay is HK-only in this demo.** The NL account cannot enrol the domain (Flow shows the button, but Checkout.com rejects the Apple Pay session with 422), and Apple's sandbox does not cover the Netherlands. Adding `applepay` back to the NL market is a one-line change once its account has the domain enrolled.
 - Flow's Hong Kong locale must be passed as `zh-HK`; the lowercase `zh-hk` shown in the localization docs is ignored.

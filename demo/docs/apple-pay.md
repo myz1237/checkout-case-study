@@ -1,4 +1,6 @@
-# Apple Pay: what is done and what is still needed
+# Apple Pay
+
+Status: verified end to end on the production Vercel domain for the Hong Kong market (2026-09-09) with a sandbox tester account and an Apple test card.
 
 Apple Pay is enabled on the payment session for the Hong Kong market (see `lib/markets.ts`).
 Flow renders the Apple Pay button automatically when all of the following hold:

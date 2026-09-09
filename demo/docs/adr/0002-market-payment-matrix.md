@@ -27,6 +27,17 @@ through its own account / processing channel via `CKO_<MARKET>_*` variables, oth
 the defaults. Flow is always initialised with the public key of the account that created the
 session, and the redirect URLs carry `market=` so the outcome pages query the right account.
 
+## One-touch options considered for the iPhone audience
+
+| Option | On an iPhone | Decision |
+|---|---|---|
+| Apple Pay | Native one-touch with Face ID | Chosen: matches the iPhone analytics directly |
+| Saved cards (merchant Vault) | One-tap Pay for returning customers, no CVV | Chosen: cheap and works everywhere |
+| Remember Me (Checkout.com network) | Phone/email + OTP, cards shared across merchants | Next step: needs account enablement |
+| Google Pay | Works in Safari only with a Google account holding cards; rare in HK | Left out on purpose |
+| AlipayHK / WeChat Pay HK | Popular local wallets, app redirect | Not enabled on the sandbox; would be the next addition for HK |
+| PayPal | Login redirect | Not enabled on the sandbox |
+
 ## Consequences
 
 - Google Pay is deliberately absent: analytics say the audience is iPhone, and one wallet keeps the demo focused.
