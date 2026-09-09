@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import CheckoutStorage from "@/components/CheckoutStorage";
 import Logo from "@/components/Logo";
 import { BackLink, OutcomeNotice } from "@/components/PaymentOutcome";
+import RefundForm from "@/components/RefundForm";
+import type { Currency } from "@/lib/catalog";
 import { intlLocale } from "@/lib/locales";
 import { loadOutcome, outcomeQuery } from "@/lib/outcome";
 import { serverLocale } from "@/lib/server-locale";
@@ -36,6 +38,16 @@ export default async function SuccessPage({ searchParams }: Props) {
         <h2 className={paid ? "success" : "error"}>{heading}</h2>
         {outcome.kind === "pending" && <p className="muted">{t("pending_note")}</p>}
         <OutcomeNotice outcome={outcome} locale={intlLocale(locale)} t={t} />
+        {outcome.kind === "success" && outcome.refund && outcome.refund.refundable > 0 && (
+          <RefundForm
+            key={outcome.refund.refundable}
+            paymentId={outcome.paymentId}
+            market={outcome.market}
+            currency={outcome.payment.currency as Currency}
+            localeId={locale}
+            refundable={outcome.refund.refundable}
+          />
+        )}
         <CheckoutStorage action={paid ? "clear" : "unlock"} />
         <BackLink label={paid ? t("continue_shopping") : t("back_to_cart")} />
       </section>

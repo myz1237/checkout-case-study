@@ -129,3 +129,10 @@ a.btn { display: inline-block; text-decoration: none; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 .logo { display: block; border-radius: 6px; flex: 0 0 auto; }
+
+.refund { margin: 20px 0; padding: 16px; border: 1px dashed var(--moss); border-radius: 12px; }
+.refund h3 { margin: 0 0 4px; font-size: 1rem; }
+.refund-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 8px; }
+.refund-row label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.refund-row input { width: 140px; padding: 10px 12px; font-size: 1rem; border: 1px solid var(--line); border-radius: 8px; }
+.refund-row input[aria-invalid="true"] { border-color: var(--error); }

@@ -6,7 +6,7 @@ import type { Translate } from "@/lib/i18n";
 import type { Outcome } from "@/lib/outcome";
 import { paymentMethodLabel } from "@/lib/payment-view";
 
-export function PaymentDetailsList({ payment, locale, t }: { payment: PaymentDetails; locale: string; t: Translate }) {
+export function PaymentDetailsList({ payment, locale, t, refunded = 0 }: { payment: PaymentDetails; locale: string; t: Translate; refunded?: number }) {
   const ok = payment.approved;
   return (
     <dl className="details" data-testid="payment-details">
@@ -18,6 +18,12 @@ export function PaymentDetailsList({ payment, locale, t }: { payment: PaymentDet
       <dd>{paymentMethodLabel(payment)}</dd>
       <dt>{t("reference")}</dt>
       <dd>{payment.reference ?? "—"}</dd>
+      {refunded > 0 && (
+        <>
+          <dt>{t("refunded")}</dt>
+          <dd>{formatMoney(refunded, payment.currency as Currency, locale)}</dd>
+        </>
+      )}
       <dt>{t("payment_id")}</dt>
       <dd>
         <code>{payment.id}</code>
@@ -42,7 +48,7 @@ export function OutcomeNotice({ outcome, locale, t }: { outcome: Outcome; locale
     case "unavailable":
       return <p className="muted">{t("unavailable", { id: outcome.paymentId })}</p>;
     default:
-      return <PaymentDetailsList payment={outcome.payment} locale={locale} t={t} />;
+      return <PaymentDetailsList payment={outcome.payment} locale={locale} t={t} refunded={outcome.refund?.refunded} />;
   }
 }
 

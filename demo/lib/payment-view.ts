@@ -1,7 +1,7 @@
 import type { PaymentDetails } from "./checkout-api";
 
 /** Statuses that mean the money side succeeded. */
-const SUCCESS_STATUSES = new Set(["Authorized", "Captured", "Paid", "Card Verified"]);
+const SUCCESS_STATUSES = new Set(["Authorized", "Captured", "Paid", "Card Verified", "Partially Refunded", "Refunded"]);
 /** Asynchronous methods (e.g. iDEAL) can land on success_url before the capture is final. */
 const PENDING_STATUSES = new Set(["Pending", "Authorization Pending", "Capture Pending"]);
 

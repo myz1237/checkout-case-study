@@ -79,6 +79,10 @@ Any future expiry and any 3-digit CVV. Full list: [Checkout.com test cards](http
 
 Switch market with the segmented control (prices, currency and payment methods change), currency with the first dropdown (each market has its own price list per currency; iDEAL disappears outside EUR; mid-checkout the session is recreated in place) and language with the second: the page copy, Flow, the price format and the outcome pages all follow it (`en`, `zh-HK`, `nl`). Product names stay in English. The choice is mirrored into a cookie so the server-rendered success/failure pages use the same language.
 
+## Refunds
+
+For a captured payment the success page shows a refund form pre-filled with the refundable amount (the captured amount minus earlier refunds, read from the payment's actions). Submitting calls `POST /api/payments/{id}/refund`, which re-checks the limit server-side, calls Checkout.com's Refund a payment, waits for the status to move to `Partially Refunded` or `Refunded`, and the page re-renders with the new status and the total refunded so far. The form disappears once nothing is left to refund.
+
 ## Webhooks
 
 `POST /api/webhooks` receives Checkout.com webhooks. Every request must carry the `Authorization` header value and a valid `Cko-Signature` (HMAC-SHA256 of the raw body) matching `CKO_WH_AUTH_HEADER_KEY` and `CKO_WH_SIGN_KEY`; anything else is rejected with 401. `payment_approved`, `payment_captured` and `payment_declined` are logged to the server console (Vercel → Logs), other events are acknowledged and ignored.
@@ -104,14 +108,14 @@ To register it: Dashboard → Developers → Webhooks → New webhook → URL `h
 - **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. In this demo the NL market is processed through the shared case-study sandbox (which has iDEAL) via the `CKO_NL_*` override, while HK uses a sandbox account that can enrol Apple Pay.
 - **Apple Pay is HK-only in this demo.** The NL account cannot enrol the domain (Flow shows the button, but Checkout.com rejects the Apple Pay session with 422), and Apple's sandbox does not cover the Netherlands. Adding `applepay` back to the NL market is a one-line change once its account has the domain enrolled.
 - Flow's Hong Kong locale must be passed as `zh-HK`; the lowercase `zh-hk` shown in the localization docs is ignored.
-- Not built (Part 3 optional item left out on purpose): refunds.
+- **Refunds are demo-only.** The refund form on the success page has no authentication; a real store must put it behind staff login. Refunds are asynchronous at Checkout.com; the route waits a few seconds for the status to change so the page can show it.
 
 ## Layout
 
 ```
-app/                Next.js App Router: storefront page, /success, /failure, /api/payment-sessions, /api/webhooks
+app/                Next.js App Router: storefront page, /success, /failure, /api/payment-sessions, /api/payments/[id]/refund, /api/webhooks
 components/         ProductGrid, CartSummary, CustomerForm, MarketSwitch, LanguageSelect, FlowCheckout, PaymentOutcome
-lib/                catalogue, cart maths, markets, locales, page copy (i18n), credentials, session request builder, Checkout.com API client
+lib/                catalogue, cart maths, markets, locales, page copy (i18n), credentials, session request builder, refund maths, Checkout.com API client
 hooks/              usePersistentState (Web Storage via useSyncExternalStore)
 tests/unit/         Vitest unit tests
 tests/e2e/          Playwright scenarios + run-all runner

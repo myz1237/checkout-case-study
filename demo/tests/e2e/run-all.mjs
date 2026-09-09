@@ -2,7 +2,7 @@
 import { spawnSync } from "node:child_process";
 import { BASE } from "./lib.mjs";
 
-const SCENARIOS = ["cart-flow", "market-matrix", "currency", "outcome-pages", "customer-3ds", "language", "page-i18n", "saved-card", "ideal"];
+const SCENARIOS = ["cart-flow", "market-matrix", "currency", "outcome-pages", "customer-3ds", "language", "page-i18n", "saved-card", "ideal", "refund"];
 const only = process.argv.slice(2);
 const list = only.length ? SCENARIOS.filter((s) => only.includes(s)) : SCENARIOS;
 

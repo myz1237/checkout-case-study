@@ -1,6 +1,7 @@
 import "server-only";
 import type { Credentials } from "./credentials";
 import type { PaymentSessionRequest } from "./payment-session";
+import type { PaymentAction } from "./refund";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_CKO_ENVIRONMENT === "production"
@@ -62,7 +63,6 @@ export type PaymentDetails = {
   "3ds"?: { challenged?: boolean; authentication_response?: string };
 };
 
-type PaymentAction = { type: string; response_summary?: string; processed_on?: string };
 
 /** Get Payment Details, adding the decline reason from the latest action; null when the account does not know the payment. */
 export async function getPayment(creds: Credentials, id: string): Promise<PaymentDetails | null> {
@@ -78,6 +78,21 @@ export async function getPayment(creds: Credentials, id: string): Promise<Paymen
     if (err instanceof CheckoutApiError && err.status === 404) return null;
     throw err;
   }
+}
+
+/** All actions on a payment (authorization, capture, refunds…), newest first. */
+export async function getPaymentActions(creds: Credentials, id: string): Promise<PaymentAction[]> {
+  return (await request<PaymentAction[] | null>(creds, `/payments/${encodeURIComponent(id)}/actions`, { method: "GET" })) ?? [];
+}
+
+export type RefundResponse = { action_id: string; reference?: string };
+
+/** Refund part or all of a captured payment; Checkout.com processes it asynchronously (202). */
+export function refundPayment(creds: Credentials, id: string, amount: number, reference: string): Promise<RefundResponse> {
+  return request<RefundResponse>(creds, `/payments/${encodeURIComponent(id)}/refunds`, {
+    method: "POST",
+    body: JSON.stringify({ amount, reference }),
+  });
 }
 
 export type CustomerRecord = { id: string; email: string; instruments?: { id: string; type?: string; last4?: string }[] };

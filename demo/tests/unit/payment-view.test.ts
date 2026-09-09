@@ -7,6 +7,8 @@ describe("payment view helpers", () => {
   it("treats Authorized and Captured as success, declines as failure", () => {
     expect(isSuccessful({ ...base, status: "Authorized" })).toBe(true);
     expect(isSuccessful({ ...base, status: "Captured" })).toBe(true);
+    expect(isSuccessful({ ...base, status: "Partially Refunded" })).toBe(true);
+    expect(isSuccessful({ ...base, status: "Refunded" })).toBe(true);
     expect(isSuccessful({ ...base, status: "Declined", approved: false })).toBe(false);
     expect(isSuccessful({ ...base, status: "Pending" })).toBe(false);
     expect(isPending({ ...base, status: "Pending" })).toBe(true);
