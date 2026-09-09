@@ -10,8 +10,7 @@ the merchant ever touching card data.
 |---|---|---|
 | Capture card details securely, stay PCI compliant | **Checkout.com Flow** embedded on the page | Card fields are rendered in Checkout.com iframes, the merchant qualifies for SAQ A, and the checkout stays on our page (no redirect to a hosted page). [ADR 0001](docs/adr/0001-flow-over-hosted-pages.md) |
 | Selling in the EU (Netherlands) → PSD2 Strong Customer Authentication | **3DS on every card payment** (`3ds.enabled: true`), both markets | SCA is mandatory for EEA card payments; Flow runs 3DS2 and the issuer decides challenge vs frictionless. Keeping HK identical avoids a second code path; Apple Pay carries its own authentication |
-| Mostly iPhone visitors, faster checkout | **Apple Pay via Flow** | Flow renders the Apple Pay button on Safari once the domain is enrolled; no separate wallet integration. [docs/apple-pay.md](docs/apple-pay.md) |
-| Works on mobile | One responsive web page | Flow is a responsive web component; the native Mobile SDKs are for apps, not websites |
+| Mostly iPhone visitors, faster checkout | **Apple Pay via Flow** on the same responsive page | Flow renders the Apple Pay button on Safari once the domain is enrolled; no separate wallet integration and no Mobile SDK (those are for native apps). [docs/apple-pay.md](docs/apple-pay.md) |
 | Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language, **credentials** | HK: card + Apple Pay in HKD or USD. NL: card + iDEAL in EUR, card only in USD (iDEAL settles in EUR). Explicit `enabled_payment_methods` so nothing else on the account leaks in. Each market can process through its own account / processing channel. [ADR 0002](docs/adr/0002-market-payment-matrix.md) |
 | No database | Hard-coded catalogue, cart in `localStorage` | Prices are always recomputed on the server from the catalogue; the browser only sends product ids and quantities |
 
