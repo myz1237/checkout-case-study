@@ -96,7 +96,7 @@ To register it: Dashboard → Developers → Webhooks → New webhook → URL `h
    This uses the default credentials (the HK market). Add `--market NL` to enrol with a market's own credentials.
    Preview deployments get a different URL per commit, so only enrol the stable production domain.
 4. Success/failure URLs are derived from the request origin, so nothing else changes between local and hosted.
-5. `vercel.json` sets an Ignored Build Step: commits that only touch `docs/`, `README.md`, `tests/` or `.env.example` do not trigger a deployment.
+5. `vercel.json` sets an Ignored Build Step: commits that only touch `docs/` do not trigger a deployment.
 
 ## Known limitations
 
