@@ -15,3 +15,6 @@ skills-lock.json
 
 # presentation material (screenshots, outline); remove this line to commit it
 presentation/
+
+# design notes and ADRs stay local
+demo/docs/

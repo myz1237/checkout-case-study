@@ -8,10 +8,10 @@ the merchant ever touching card data.
 
 | Requirement | Decision | Why |
 |---|---|---|
-| Capture card details securely, stay PCI compliant | **Checkout.com Flow** embedded on the page | Card fields are rendered in Checkout.com iframes, the merchant qualifies for SAQ A, and the checkout stays on our page (no redirect to a hosted page). [ADR 0001](docs/adr/0001-flow-over-hosted-pages.md) |
+| Capture card details securely, stay PCI compliant | **Checkout.com Flow** embedded on the page | Card fields are rendered in Checkout.com iframes, the merchant qualifies for SAQ A, and the checkout stays on our page (no redirect to a hosted page). |
 | Selling in the EU (Netherlands) → PSD2 Strong Customer Authentication | **3DS on every card payment** (`3ds.enabled: true`), both markets | SCA is mandatory for EEA card payments; Flow runs 3DS2 and the issuer decides challenge vs frictionless. Keeping HK identical avoids a second code path; Apple Pay carries its own authentication |
-| Mostly iPhone visitors, faster checkout | **Apple Pay via Flow** on the same responsive page | Flow renders the Apple Pay button on Safari once the domain is enrolled; no separate wallet integration and no Mobile SDK (those are for native apps). [docs/apple-pay.md](docs/apple-pay.md) |
-| Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language, **credentials** | HK: card + Apple Pay in HKD or USD. NL: card + iDEAL in EUR, card only in USD (iDEAL settles in EUR). Explicit `enabled_payment_methods` so nothing else on the account leaks in. Each market can process through its own account / processing channel. [ADR 0002](docs/adr/0002-market-payment-matrix.md) |
+| Mostly iPhone visitors, faster checkout | **Apple Pay via Flow** on the same responsive page | Flow renders the Apple Pay button on Safari once the domain is enrolled; no separate wallet integration and no Mobile SDK (those are for native apps). |
+| Hong Kong and the Netherlands | Market switch → currency, billing country, payment methods, language, **credentials** | HK: card + Apple Pay in HKD or USD. NL: card + iDEAL in EUR, card only in USD (iDEAL settles in EUR). Explicit `enabled_payment_methods` so nothing else on the account leaks in. Each market can process through its own account / processing channel. |
 | No database | Hard-coded catalogue, cart in `localStorage` | Prices are always recomputed on the server from the catalogue; the browser only sends product ids and quantities |
 
 ## Saved cards
@@ -96,11 +96,10 @@ To register it: Dashboard → Developers → Webhooks → New webhook → URL `h
    This uses the default credentials (the HK market). Add `--market NL` to enrol with a market's own credentials.
    Preview deployments get a different URL per commit, so only enrol the stable production domain.
 4. Success/failure URLs are derived from the request origin, so nothing else changes between local and hosted.
-5. `vercel.json` sets an Ignored Build Step: commits that only touch `docs/` do not trigger a deployment.
 
 ## Known limitations
 
-- **Apple Pay** is verified end to end for the HK market on the Vercel deployment (domain enrolled, sandbox tester account, Apple test card, payment captured). Enrollment needs a secret key with the `vault:apme-enrollment` scope, which the shared case-study key lacks, and Apple's sandbox covers Hong Kong but not the Netherlands. See [docs/apple-pay.md](docs/apple-pay.md) and [ADR 0003](docs/adr/0003-apple-pay-enrollment.md).
+- **Apple Pay** is verified end to end for the HK market on the Vercel deployment (domain enrolled, sandbox tester account, Apple test card, payment captured). Enrollment needs a secret key with the `vault:apme-enrollment` scope, which the shared case-study key lacks, and Apple's sandbox covers Hong Kong but not the Netherlands.
 - **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. In this demo the NL market is processed through the shared case-study sandbox (which has iDEAL) via the `CKO_NL_*` override, while HK uses a sandbox account that can enrol Apple Pay.
 - **Apple Pay is HK-only in this demo.** The NL account cannot enrol the domain (Flow shows the button, but Checkout.com rejects the Apple Pay session with 422), and Apple's sandbox does not cover the Netherlands. Adding `applepay` back to the NL market is a one-line change once its account has the domain enrolled.
 - Flow's Hong Kong locale must be passed as `zh-HK`; the lowercase `zh-hk` shown in the localization docs is ignored.
@@ -116,5 +115,4 @@ hooks/              usePersistentState (Web Storage via useSyncExternalStore)
 tests/unit/         Vitest unit tests
 tests/e2e/          Playwright scenarios + run-all runner
 scripts/            enroll-apple-pay.mjs
-docs/               apple-pay.md, adr/
 ```
