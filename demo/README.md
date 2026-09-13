@@ -51,6 +51,7 @@ Environment variables:
 | `SITE_URL` | server only, optional | Public origin for the redirect URLs when running `next start` behind a proxy; not needed on Vercel or locally |
 | `CKO_NL_SECRET_KEY`, `CKO_NL_PROCESSING_CHANNEL_ID`, `CKO_NL_PUBLIC_KEY` | server only, optional | Process the NL market through a different account / processing channel. Set all three or none; HK (and any market without an override) keeps the defaults |
 | `CKO_WH_AUTH_HEADER_KEY`, `CKO_WH_SIGN_KEY` | server only | Authorization header value and signature key of the webhook registered in the Dashboard |
+| `ADMIN_USER`, `ADMIN_PASSWORD` | server only | HTTP Basic Auth for the staff area `/admin` and `/api/admin/*`; unset disables the area (503) |
 
 ## Tests
 
@@ -59,7 +60,7 @@ Everything lives under `tests/`:
 | Command | What runs |
 |---|---|
 | `pnpm test` | Unit tests in `tests/unit/` (Vitest): cart maths, pricing, session request builder, markets, locales, page copy, input guards, credentials, origin resolution, webhook verification |
-| `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, saved card, iDEAL via the test bank, market, currency and language switching, outcome pages |
+| `pnpm test:e2e` | End-to-end scenarios in `tests/e2e/` (Playwright, headless Chromium) against a running `pnpm dev`. They make real sandbox payments: card, 3DS challenge / frictionless / failed, decline, saved card, iDEAL via the test bank, market, currency and language switching, outcome pages, staff refund (partial and full) |
 | `pnpm lint`, `pnpm build` | ESLint and a production build |
 
 Before the first e2e run: `pnpm exec playwright install chromium`. Run a single scenario with `pnpm test:e2e customer-3ds`; screenshots land in `tests/e2e/screenshots/`.
@@ -81,7 +82,9 @@ Switch market with the segmented control (prices, currency and payment methods c
 
 ## Refunds
 
-For a captured payment the success page shows a refund form pre-filled with the refundable amount (the captured amount minus earlier refunds, read from the payment's actions). Submitting calls `POST /api/payments/{id}/refund`, which re-checks the limit server-side, calls Checkout.com's Refund a payment, waits for the status to move to `Partially Refunded` or `Refunded`, and the page re-renders with the new status and the total refunded so far. The form disappears once nothing is left to refund.
+Refunds are a merchant action, so they live in a staff area rather than on the customer's page. `/admin` and `/api/admin/*` sit behind HTTP Basic Auth (`proxy.ts`, credentials from `ADMIN_USER` / `ADMIN_PASSWORD`). Staff look a payment up by order reference (`ORD-…`, as seen in the webhook log, the Dashboard or the customer's confirmation) or by payment id; the lookup runs across every configured account. The page shows the payment, the total refunded so far (from the payment's actions) and a form pre-filled with what is still refundable. `POST /api/admin/refund` re-checks the limit server-side, calls Checkout.com's Refund a payment, waits for the status to move to `Partially Refunded` or `Refunded`, and the page re-renders. The customer's success page only points to support with the order reference; after a refund it shows the refunded total.
+
+How this evolved: the first version put the refund form on the customer's success page (commit `4e4d951`), which let anyone holding a payment id refund it. Moving it behind staff authentication is the fix; the next step in a real store would be a proper staff login and an approval step instead of a shared Basic Auth credential, and persisted orders so staff do not need to look references up by hand.
 
 ## Webhooks
 
@@ -108,12 +111,13 @@ To register it: Dashboard → Developers → Webhooks → New webhook → URL `h
 - **iDEAL** must be enabled on the account (Dashboard → Settings → Payment methods → *Available to request*, or via support). The code sends `ideal` for the NL market; Checkout.com silently drops it until the account has it. In this demo the NL market is processed through the shared case-study sandbox (which has iDEAL) via the `CKO_NL_*` override, while HK uses a sandbox account that can enrol Apple Pay.
 - **Apple Pay is HK-only in this demo.** The NL account cannot enrol the domain (Flow shows the button, but Checkout.com rejects the Apple Pay session with 422), and Apple's sandbox does not cover the Netherlands. Adding `applepay` back to the NL market is a one-line change once its account has the domain enrolled.
 - Flow's Hong Kong locale must be passed as `zh-HK`; the lowercase `zh-hk` shown in the localization docs is ignored.
-- **Refunds are demo-only.** The refund form on the success page has no authentication; a real store must put it behind staff login. Refunds are asynchronous at Checkout.com; the route waits a few seconds for the status to change so the page can show it.
+- **Staff area uses shared Basic Auth credentials** rather than individual staff logins and an approval workflow. Refunds are asynchronous at Checkout.com; the route waits a few seconds for the status to change so the page can show it.
 
 ## Layout
 
 ```
-app/                Next.js App Router: storefront page, /success, /failure, /api/payment-sessions, /api/payments/[id]/refund, /api/webhooks
+app/                Next.js App Router: storefront page, /success, /failure, /admin, /api/payment-sessions, /api/admin/refund, /api/webhooks
+proxy.ts            HTTP Basic Auth in front of /admin and /api/admin
 components/         ProductGrid, CartSummary, CustomerForm, MarketSwitch, LanguageSelect, FlowCheckout, PaymentOutcome
 lib/                catalogue, cart maths, markets, locales, page copy (i18n), credentials, session request builder, refund maths, Checkout.com API client
 hooks/              usePersistentState (Web Storage via useSyncExternalStore)

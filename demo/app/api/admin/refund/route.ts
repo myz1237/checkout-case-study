@@ -5,19 +5,16 @@ import { isMarketId, MARKETS, type MarketId } from "@/lib/markets";
 import { parsePaymentId } from "@/lib/payment-view";
 import { refundableAmount, refundedAmount } from "@/lib/refund";
 
-type Body = { amount?: unknown; market?: unknown };
+type Body = { paymentId?: unknown; amount?: unknown; market?: unknown };
 
 /**
- * Refunds part or all of a captured payment, then waits briefly for Checkout.com
- * to apply it so the caller can show the new status. Demo only: a real store
- * must put this behind staff authentication.
+ * Staff refund (behind Basic Auth, see proxy.ts): refunds part or all of a captured
+ * payment, then waits briefly for Checkout.com to apply it so the page can show the new status.
  */
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
-  const paymentId = parsePaymentId(id);
-  if (!paymentId) return NextResponse.json({ error: "payment_id_invalid" }, { status: 400 });
-
+export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as Body;
+  const paymentId = parsePaymentId(body.paymentId);
+  if (!paymentId) return NextResponse.json({ error: "payment_id_invalid" }, { status: 400 });
   const amount = typeof body.amount === "number" && Number.isInteger(body.amount) && body.amount > 0 ? body.amount : null;
   if (!amount) return NextResponse.json({ error: "amount_invalid" }, { status: 400 });
 
@@ -45,7 +42,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
     const refund = await refundPayment(creds, paymentId, amount, `${payment.reference ?? paymentId}-refund`);
 
-    // Refunds are asynchronous; give the sandbox a few seconds to reflect the new status.
     const target = refundedAmount(before) + amount;
     let latest = payment;
     let refunded = refundedAmount(before);

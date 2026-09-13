@@ -136,3 +136,7 @@ a.btn { display: inline-block; text-decoration: none; }
 .refund-row label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
 .refund-row input { width: 140px; padding: 10px 12px; font-size: 1rem; border: 1px solid var(--line); border-radius: 8px; }
 .refund-row input[aria-invalid="true"] { border-color: var(--error); }
+
+.lookup { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.lookup label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; flex: 1 1 320px; }
+.lookup input { padding: 10px 12px; font-size: 1rem; border: 1px solid var(--line); border-radius: 8px; }

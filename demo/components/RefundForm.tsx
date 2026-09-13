@@ -17,7 +17,7 @@ type Props = {
   refundable: number;
 };
 
-/** Demo-only refund control shown on the success page for captured payments. */
+/** Refund control for the staff area; posts to the Basic-Auth-protected admin endpoint. */
 export default function RefundForm({ paymentId, market, currency, localeId, refundable }: Props) {
   const router = useRouter();
   const t = translator(localeId);
@@ -33,10 +33,10 @@ export default function RefundForm({ paymentId, market, currency, localeId, refu
     if (invalid || minor === null) return;
     setState({ kind: "busy" });
     try {
-      const res = await fetch(`/api/payments/${encodeURIComponent(paymentId)}/refund`, {
+      const res = await fetch("/api/admin/refund", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: minor, market }),
+        body: JSON.stringify({ paymentId, amount: minor, market }),
       });
       const data = (await res.json().catch(() => ({}))) as { status?: string; error?: string };
       if (!res.ok) throw new Error(data.error ?? String(res.status));

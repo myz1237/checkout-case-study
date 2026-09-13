@@ -95,6 +95,12 @@ export function refundPayment(creds: Credentials, id: string, amount: number, re
   });
 }
 
+/** Payments carrying our order reference, newest first (Get payment list). */
+export async function findPaymentsByReference(creds: Credentials, reference: string): Promise<PaymentDetails[]> {
+  const res = await request<{ data?: PaymentDetails[] } | null>(creds, `/payments?reference=${encodeURIComponent(reference)}`, { method: "GET" });
+  return res?.data ?? [];
+}
+
 export type CustomerRecord = { id: string; email: string; instruments?: { id: string; type?: string; last4?: string }[] };
 
 /** Checkout.com creates a customer per email automatically; null when this account has none for the address. */
